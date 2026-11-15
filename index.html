@@ -288,6 +288,55 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
 @media (max-width:560px){.dims{grid-template-columns:minmax(0,1fr)}.step{flex-basis:56px}.dim-row .in{font-size:26px}.hero h1{font-size:30px}.mark{width:38px;height:48px}.gl-hint{display:none}}
 @media (max-width:420px){.rules{grid-template-columns:minmax(0,1fr)}.totals{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* print button */
+.btn.has-ico{display:inline-flex;align-items:center;gap:8px}
+.btn .bi{width:17px;height:17px;flex:0 0 auto}
+.print-row{margin-top:14px}
+
+/* printed shop sheet: hidden on screen, the only thing on paper. Fixed ink colors so dark mode never reaches the page. */
+.ps{display:none}
+@media print{
+  @page{size:letter portrait;margin:.45in .5in}
+  html,body{background:#fff!important}
+  body{padding:0!important}
+  .hero,.wrap{display:none!important}
+  .ps{display:block}
+}
+.ps{font-family:var(--font-body);color:#111;font-size:11.5pt;line-height:1.35;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.ps .i-st,.ps .m-st{fill:#D9E7F6;stroke:#2D6CAD}
+.ps .i-ra,.ps .m-ra{fill:#DFEDD4;stroke:#477629}
+.ps .i-pa,.ps .m-pa{fill:#EAE3F4;stroke:#72549B}
+.ps-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16pt;border-bottom:2.5pt solid #111;padding-bottom:7pt}
+.ps-kicker{font-family:var(--font-display);font-weight:700;font-size:9.5pt;letter-spacing:.14em;text-transform:uppercase;color:#555}
+.ps-title{font-family:var(--font-display);font-weight:700;font-size:24pt;line-height:1.05;margin:2pt 0 0}
+.ps-meta{text-align:right;font-size:10pt;color:#444;white-space:nowrap}
+.ps-meta b{display:block;font-family:var(--font-display);font-size:15pt;color:#111}
+.ps-rules{font-size:9.5pt;color:#444;margin:6pt 0 0}
+.ps-warn{border:1.25pt solid #B42318;color:#B42318;border-radius:4pt;padding:5pt 8pt;margin-top:10pt;font-size:10.5pt}
+.ps-sec{margin-top:12pt}
+.ps-sec h2{display:flex;align-items:center;gap:7pt;font-family:var(--font-display);font-size:14.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin:0 0 3pt;break-after:avoid;page-break-after:avoid}
+.ps-sec h2 small{font-family:var(--font-body);font-size:10pt;font-weight:500;letter-spacing:0;text-transform:none;color:#555}
+.ps-sec h2 .ico{width:17pt;height:17pt}
+.ps-cnt{margin-left:auto;font-family:var(--font-body);font-size:10pt;font-weight:600;letter-spacing:0;text-transform:none;color:#333}
+.ps-t{width:100%;border-collapse:collapse}
+.ps-t th{white-space:nowrap;text-align:left;font-size:8pt;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#555;padding:3pt 6pt;border-bottom:1pt solid #111}
+.ps-t td{padding:3.5pt 6pt;border-bottom:.75pt solid #BDBDBD;vertical-align:middle}
+.ps-t tr{break-inside:avoid;page-break-inside:avoid}
+.ps-c{width:16pt}
+.ps-box{display:block;width:12pt;height:12pt;border:1.25pt solid #111;border-radius:2pt}
+.ps-q{width:46pt;font-family:var(--font-display);font-weight:700;font-size:13.5pt;white-space:nowrap}
+.ps-sz{width:150pt;font-family:var(--font-display);font-weight:700;font-size:15.5pt;white-space:nowrap}
+.ps-for{font-size:9.5pt;color:#333}
+.ps-tots{display:flex;gap:8pt;margin-top:11pt;break-inside:avoid;page-break-inside:avoid}
+.ps-tots div{flex:1;border:1pt solid #999;border-radius:5pt;padding:4pt 9pt;font-size:9.5pt;color:#444}
+.ps-tots b{display:block;font-family:var(--font-display);font-size:16pt;color:#111;line-height:1.1}
+.ps-small{font-size:8.5pt;color:#666;margin:4pt 0 0}
+.ps-doors td{font-family:var(--font-display);font-weight:600;font-size:11pt;white-space:nowrap}
+.ps-doors td.ps-nm{font-family:var(--font-body);font-weight:600;white-space:normal}
+.ps-doors td.ps-bad{font-family:var(--font-body);color:#B42318;white-space:normal}
+.ps-doors .thumb{display:block;width:17pt;height:21pt}
+.ps-th{width:19pt}
 </style>
 </head>
 <body>
@@ -398,6 +447,10 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
     <section class="card a-cut" aria-labelledby="cut-h">
       <div class="card-head"><h2 id="cut-h">Cut list</h2><span class="eyebrow" id="cut-for"></span></div>
       <div id="cut"></div>
+      <div class="btns print-row">
+        <button class="btn has-ico" type="button" data-print><svg class="bi" viewBox="0 0 20 20" aria-hidden="true"><path d="M5.5 7.5V2.5h9v5M5.5 15h-2a1 1 0 0 1-1-1V8.5a1 1 0 0 1 1-1h13a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1h-2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><rect x="5.5" y="11.5" width="9" height="6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Print cut list</button>
+        <span class="status">Prints every door in the job.</span>
+      </div>
       <div class="diagram" id="diagram">
         <div class="diagram-head"><span class="eyebrow">Pieces for one door</span><span class="eyebrow">Drawn to scale</span></div>
         <svg id="cutsvg" role="img" aria-label="The pieces for one door, drawn to scale">
@@ -422,10 +475,12 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
       </div>
       <div class="groups" id="groups"></div>
       <div class="btns">
+        <button class="btn primary has-ico" type="button" data-print><svg class="bi" viewBox="0 0 20 20" aria-hidden="true"><path d="M5.5 7.5V2.5h9v5M5.5 15h-2a1 1 0 0 1-1-1V8.5a1 1 0 0 1 1-1h13a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1h-2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><rect x="5.5" y="11.5" width="9" height="6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Print cut list</button>
         <button class="btn" type="button" id="copy">Copy job cut list</button>
         <span class="status" id="copy-status" aria-live="polite"></span>
       </div>
       <textarea class="copy-box" id="copy-box" readonly hidden aria-label="Job cut list text"></textarea>
+      <p class="hint">Print makes a shop sheet with a box to tick for every cut. On a phone, the print screen can also save it as a PDF.</p>
       <p class="hint">Your doors are saved in this browser only. Nobody else can see them.</p>
     </section>
 
@@ -442,6 +497,8 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
     </details>
   </main>
 </div>
+
+<div class="ps" id="print-sheet"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
@@ -999,20 +1056,24 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
     $("#job-count").textContent = total === 1 ? "1 door" : total + " doors";
   }
   function jobParts(){
-    var r = state.rules, st = {}, ra = {}, pa = {}, doors = 0, lin2 = 0, area = 0, bad = 0;
+    var r = state.rules, st = {}, ra = {}, pa = {}, doors = 0, lin2 = 0, area = 0, bad = 0, badNames = [];
+    /* Each size keeps a count and the doors it is for ("who"), so the printed sheet can say where every cut goes. */
+    var add = function(m, k, n, who, extra){ var g = m[k] || (m[k] = Object.assign({n:0, who:[]}, extra)); g.n += n; g.who.push(who); };
     state.doors.forEach(function(d){
-      var c = calc(d, r);
-      if(!c.ok){ bad++; return; }
+      var c = calc(d, r), nm = d.name || "Untitled door";
+      if(!c.ok){ bad++; badNames.push(nm); return; }
       doors += c.q;
-      st[c.stileL] = (st[c.stileL] || 0) + c.stiles;
-      ra[c.railL] = (ra[c.railL] || 0) + c.rails;
-      var pk = c.pW + "x" + c.pH; pa[pk] = pa[pk] || {w:c.pW, h:c.pH, n:0}; pa[pk].n += c.panels;
+      var who = {name:nm, q:c.q};
+      add(st, c.stileL, c.stiles, who, {L:c.stileL});
+      add(ra, c.railL, c.rails, who, {L:c.railL});
+      add(pa, c.pW + "x" + c.pH, c.panels, who, {w:c.pW, h:c.pH});
       lin2 += c.stiles * c.stileL + c.rails * c.railL;
       area += c.panels * c.pW * c.pH;
     });
-    var byLen = function(m){ return Object.keys(m).map(Number).sort(function(a, b){ return b - a; }).map(function(L){ return {L:L, n:m[L]}; }); };
-    var pl = Object.keys(pa).map(function(k){ return pa[k]; }).sort(function(a, b){ return b.h - a.h || b.w - a.w; });
-    return {st:byLen(st), ra:byLen(ra), pa:pl, doors:doors, lin:lin2 / 12, sqft:area / 144, bad:bad};
+    var list = function(m){ return Object.keys(m).map(function(k){ return m[k]; }); };
+    var byLen = function(a, b){ return b.L - a.L; };
+    return {st:list(st).sort(byLen), ra:list(ra).sort(byLen), pa:list(pa).sort(function(a, b){ return b.h - a.h || b.w - a.w; }),
+            doors:doors, lin:lin2 / 12, sqft:area / 144, bad:bad, badNames:badNames};
   }
   function renderGroups(){
     var j = jobParts(), r = state.rules;
@@ -1046,7 +1107,49 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
   }
   function setVal(sel, v){ var el = $(sel); if(document.activeElement !== el) el.value = v; }
   function renderVisuals(){ draw(); update3D(); renderDiagram(); }
-  function renderAll(){ renderEditorDerived(); renderVisuals(); renderCut(); renderJob(); renderGroups(); renderRulesLine(); save(); }
+  function renderAll(){ renderEditorDerived(); renderVisuals(); renderCut(); renderJob(); renderGroups(); renderRulesLine(); renderPrint(); save(); }
+
+  /* ---------- printed shop sheet ---------- */
+  function renderPrint(){
+    var r = state.rules, j = jobParts(), ok = state.doors.length - j.bad;
+    var date = new Date().toLocaleDateString(undefined, {year:"numeric", month:"short", day:"numeric"});
+    var who = function(list){ return list.map(function(w){ return esc(w.name) + (w.q > 1 ? " ×" + w.q : ""); }).join(", "); };
+    var sec = function(k, title, note, items, size){
+      if(!items.length) return "";
+      var n = items.reduce(function(s, p){ return s + p.n; }, 0);
+      return '<section class="ps-sec"><h2>' + ICON[k] + title + " <small>" + note + '</small><span class="ps-cnt">' + n + (n === 1 ? " piece" : " pieces") + "</span></h2>" +
+        '<table class="ps-t"><thead><tr><th class="ps-c">✓</th><th>Qty</th><th>Cut to</th><th>For</th></tr></thead><tbody>' +
+        items.map(function(p){
+          return '<tr><td class="ps-c"><span class="ps-box"></span></td><td class="ps-q">' + p.n + ' ×</td><td class="ps-sz">' + size(p) + '</td><td class="ps-for">' + who(p.who) + "</td></tr>";
+        }).join("") + "</tbody></table></section>";
+    };
+    var doorRows = state.doors.map(function(d){
+      var c = calc(d, r);
+      return "<tr><td class=\"ps-th\">" + thumb(c, r) + '</td><td class="ps-nm">' + esc(d.name || "Untitled door") + "</td><td>" + c.q + "</td>" +
+        "<td>" + fmtH(d.w) + " × " + fmtH(d.h) + "″</td><td>" + fmtH(c.W) + " × " + fmtH(c.H) + "″</td>" +
+        (c.ok ? "<td>" + fmtH(c.stileL) + "″</td><td>" + fmtH(c.railL) + "″</td><td>" + fmtH(c.pW) + " × " + fmtH(c.pH) + "″</td>"
+              : '<td colspan="3" class="ps-bad">Too small for ' + fmtH(r.stock) + "″ stiles and rails. Check the size.</td>") + "</tr>";
+    }).join("");
+    var site = /^https?:$/.test(location.protocol) ? esc(location.host + location.pathname) : "";
+    $("#print-sheet").innerHTML =
+      '<header class="ps-head"><div><div class="ps-kicker">Cabinet door cut list</div><h1 class="ps-title">' + esc(state.job || "Cabinet doors") + "</h1></div>" +
+      '<div class="ps-meta"><b>' + j.doors + (j.doors === 1 ? " door" : " doors") + "</b>" + ok + (ok === 1 ? " size" : " sizes") + " · " + esc(date) + "</div></header>" +
+      '<p class="ps-rules">Door rules: ' + fmtH(r.overlay) + "″ overlay each side · " + fmtH(r.stock) + "″ stiles and rails · rail = door width − " + fmtH(r.railDeduct) +
+        "″ · panel = rail − " + fmtH(r.panelWDeduct) + "″ wide, stile − " + fmtH(r.panelHDeduct) + "″ tall</p>" +
+      (j.bad ? '<div class="ps-warn">Left out because the opening is too small: ' + j.badNames.map(esc).join(", ") + ". Check the size.</div>" : "") +
+      sec("st", "Stiles", fmtH(r.stock) + "″ wide", j.st, function(p){ return fmtH(p.L) + "″"; }) +
+      sec("ra", "Rails", fmtH(r.stock) + "″ wide", j.ra, function(p){ return fmtH(p.L) + "″"; }) +
+      sec("pa", "Panels", "width × height", j.pa, function(p){ return fmtH(p.w) + " × " + fmtH(p.h) + "″"; }) +
+      '<div class="ps-tots"><div><b>' + j.doors + "</b>" + (j.doors === 1 ? "door" : "doors") + "</div><div><b>" + j.lin.toFixed(1) + "</b>lin. ft of " + fmtH(r.stock) +
+        "″ stock</div><div><b>" + j.sqft.toFixed(1) + '</b>sq ft of panel</div></div><p class="ps-small">Totals are before kerf and waste. Sizes round to the nearest 1/16″. Made with Cabinet Door Builder' + (site ? " · " + site : "") + ".</p>" +
+      '<section class="ps-sec"><h2>Doors in this job</h2><table class="ps-t ps-doors"><thead><tr><th class="ps-th"></th><th>Door / location</th><th>Qty</th><th>Opening</th><th>Door</th><th>Stiles</th><th>Rails</th><th>Panel</th></tr></thead><tbody>' +
+        doorRows + "</tbody></table></section>";
+  }
+  var baseTitle = document.title;
+  function beforePrint(){ renderPrint(); document.title = (state.job ? state.job + " - " : "") + "Cabinet door cut list"; }
+  window.addEventListener("beforeprint", beforePrint);
+  window.addEventListener("afterprint", function(){ document.title = baseTitle; });
+  document.querySelectorAll("[data-print]").forEach(function(b){ b.addEventListener("click", function(){ beforePrint(); window.print(); }); });
 
   /* ---------- view switch ---------- */
   function setView(v){
