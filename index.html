@@ -1130,7 +1130,7 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
         (c.ok ? "<td>" + fmtH(c.stileL) + "″</td><td>" + fmtH(c.railL) + "″</td><td>" + fmtH(c.pW) + " × " + fmtH(c.pH) + "″</td>"
               : '<td colspan="3" class="ps-bad">Too small for ' + fmtH(r.stock) + "″ stiles and rails. Check the size.</td>") + "</tr>";
     }).join("");
-    var site = /^https?:$/.test(location.protocol) ? esc(location.host + location.pathname) : "";
+    var site = /^https?:$/.test(location.protocol) ? esc(location.host + location.pathname.replace(/\/(index\.html)?$/, "")) : "";
     $("#print-sheet").innerHTML =
       '<header class="ps-head"><div><div class="ps-kicker">Cabinet door cut list</div><h1 class="ps-title">' + esc(state.job || "Cabinet doors") + "</h1></div>" +
       '<div class="ps-meta"><b>' + j.doors + (j.doors === 1 ? " door" : " doors") + "</b>" + ok + (ok === 1 ? " size" : " sizes") + " · " + esc(date) + "</div></header>" +
