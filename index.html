@@ -125,6 +125,12 @@ input[type=range]{width:100%;accent-color:var(--gold-line);margin:8px 0 0}
 .hint{font-size:13px;color:var(--muted);margin:12px 0 0}
 .err{font-size:13px;color:var(--danger);margin:2px 0 0}
 .err:empty{display:none}
+.leaves{margin-top:16px}
+.leaves .seg{display:flex;width:100%}
+.leaves .seg button{flex:1 1 0;padding:9px 10px;font-size:15px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.leaves .seg svg{width:22px;height:18px;flex:0 0 auto}
+.leaves .seg svg rect{fill:var(--panel-tint);stroke:currentColor;stroke-width:1.3}
+.leaves .lbl{font-family:var(--font-display);font-size:12px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
 .door-size{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
 .door-size .big{font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--slate)}
 .door-size .note{font-size:13px;color:var(--muted)}
@@ -334,6 +340,7 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
 .ps-small{font-size:8.5pt;color:#666;margin:4pt 0 0}
 .ps-doors td{font-family:var(--font-display);font-weight:600;font-size:11pt;white-space:nowrap}
 .ps-doors td.ps-nm{font-family:var(--font-body);font-weight:600;white-space:normal}
+.ps-pair{display:block;font-weight:400;font-size:9pt;color:#555}
 .ps-doors td.ps-bad{font-family:var(--font-body);color:#B42318;white-space:normal}
 .ps-doors .thumb{display:block;width:17pt;height:21pt}
 .ps-th{width:19pt}
@@ -366,7 +373,14 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
       <div class="card-head"><h2 id="ed-h">Door</h2><span class="eyebrow">Opening size, inches</span></div>
       <div class="row2">
         <div class="field"><label for="name">Door / location</label><input id="name" class="in" autocomplete="off"></div>
-        <div class="field"><label for="qty">Qty</label><input id="qty" class="in" type="number" min="1" step="1" inputmode="numeric"></div>
+        <div class="field"><label for="qty" id="qty-l">Qty</label><input id="qty" class="in" type="number" min="1" step="1" inputmode="numeric"></div>
+      </div>
+      <div class="field leaves">
+        <span class="lbl" id="leaves-l">Doors per opening</span>
+        <div class="seg" role="group" aria-labelledby="leaves-l">
+          <button type="button" id="lv-1" aria-pressed="true"><svg viewBox="0 0 22 18" aria-hidden="true"><rect x="6" y="1" width="10" height="16" rx="1"/></svg>Single door</button>
+          <button type="button" id="lv-2" aria-pressed="false"><svg viewBox="0 0 22 18" aria-hidden="true"><rect x="1" y="1" width="9.5" height="16" rx="1"/><rect x="11.5" y="1" width="9.5" height="16" rx="1"/></svg>Pair of doors</button>
+        </div>
       </div>
       <div class="dims">
         <div class="field">
@@ -391,7 +405,7 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
         </div>
       </div>
       <p class="hint">Type 15 1/2, 15-1/2 or 15.5. Hold + or − to walk the size in 1/16″ steps, or use the arrow keys (Shift for 1/2″).</p>
-      <div class="door-size"><span class="eyebrow">Finished door</span><span class="big" id="door-size"></span><span class="note" id="door-note"></span></div>
+      <div class="door-size"><span class="eyebrow" id="door-lbl">Finished door</span><span class="big" id="door-size"></span><span class="note" id="door-note"></span></div>
     </section>
 
     <section class="card stage a-stage" aria-labelledby="stage-h">
@@ -545,13 +559,18 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
 
   /* ---------- math ---------- */
   var r16 = function(x){ return Math.round(x * 16) / 16; };
+  /* A pair adds the overlay all the way around the whole opening, then splits that width in half.
+     An odd 1/16 rounds each door down, so the two never come out wider than the overlay. Everything
+     after the door width (rails, panel) uses the same rules as a single door. q = openings, n = doors. */
   function calc(d, r){
-    var W = r16(d.w + 2 * r.overlay), H = r16(d.h + 2 * r.overlay);
+    var pair = !!d.pair, leaves = pair ? 2 : 1;
+    var fullW = r16(d.w + 2 * r.overlay), H = r16(d.h + 2 * r.overlay);
+    var W = pair ? Math.floor(fullW * 8 + 1e-9) / 16 : fullW;
     var railL = r16(W - r.railDeduct);
     var pW = r16(railL - r.panelWDeduct), pH = r16(H - r.panelHDeduct);
     var ok = W > 2 * r.stock && H > 2 * r.stock && railL > 0 && pW > 0 && pH > 0 && railL >= W - 2 * r.stock;
-    var q = Math.max(1, d.qty | 0);
-    return {W:W, H:H, stileL:H, railL:railL, pW:pW, pH:pH, ok:ok, q:q, stiles:2 * q, rails:2 * q, panels:q};
+    var q = Math.max(1, d.qty | 0), n = q * leaves;
+    return {W:W, H:H, fullW:fullW, pair:pair, leaves:leaves, stileL:H, railL:railL, pW:pW, pH:pH, ok:ok, q:q, n:n, stiles:2 * n, rails:2 * n, panels:n};
   }
   function parseSize(v){
     var s = String(v == null ? "" : v).trim().replace(/["″”]/g, "").replace(/\s+/g, " ");
@@ -673,14 +692,15 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
     var d = cur(), r = state.rules, c = calc(d, r);
     var cw = svgHost.clientWidth, ch = svgHost.clientHeight;
     if(!cw || !ch) return;
-    var narrow = cw < 520;
-    var pad = {l: narrow ? 50 : 78, r: narrow ? 50 : 78, t: narrow ? 50 : 60, b: narrow ? 56 : 68};
-    var W = Math.max(c.W, 1), H = Math.max(c.H, 1);
-    var s = Math.max(0.5, Math.min((cw - pad.l - pad.r) / W, (ch - pad.t - pad.b) / H));
-    var dw = W * s, dh = H * s;
-    var ox = pad.l + ((cw - pad.l - pad.r) - dw) / 2, oy = pad.t + ((ch - pad.t - pad.b) - dh) / 2;
+    var narrow = cw < 520, pair = c.pair, rise = narrow ? 26 : 30;
+    var pad = {l: narrow ? 50 : 78, r: narrow ? 50 : 78, t: (narrow ? 50 : 60) + (pair ? rise : 0), b: narrow ? 56 : 68};
+    // W = one door; TW = everything drawn side by side (the pair's full overlay width)
+    var W = Math.max(c.W, 1), H = Math.max(c.H, 1), TW = pair ? Math.max(c.fullW, 1) : W;
+    var s = Math.max(0.5, Math.min((cw - pad.l - pad.r) / TW, (ch - pad.t - pad.b) / H));
+    var dw = W * s, tdw = TW * s, dh = H * s;
+    var ox = pad.l + ((cw - pad.l - pad.r) - tdw) / 2, oy = pad.t + ((ch - pad.t - pad.b) - dh) / 2;
     var X = function(x){ return ox + x * s; }, Y = function(y){ return oy + y * s; };
-    var o = [], defs = [];
+    var o = [], labels = [];
     svg.setAttribute("viewBox", "0 0 " + cw + " " + ch);
 
     var g = s >= 7 ? 1 : (s >= 2.2 ? 3 : 6), gs = g * s;
@@ -691,85 +711,104 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
     o.push('<path class="g-minor" d="' + minor + '"/><path class="g-major" d="' + major + '"/>');
     $("#grid-note").textContent = "Grid = " + g + "″, heavy line every 12″";
 
-    o.push(rect("", X(0) + 2, Y(0) + 8, dw, dh, ' fill="#0B1220" fill-opacity=".22" filter="url(#soft)"'));
+    o.push(rect("", X(0) + 2, Y(0) + 8, tdw, dh, ' fill="#0B1220" fill-opacity=".22" filter="url(#soft)"'));
 
     if(!c.ok){
-      o.push(rect("outline", X(0), Y(0), dw, dh, ' style="fill:var(--surface)"'));
+      o.push(rect("outline", X(0), Y(0), tdw, dh, ' style="fill:var(--surface)"'));
       o.push('<text class="t-warn" x="' + (cw / 2) + '" y="' + (ch / 2) + '" text-anchor="middle">Too small for ' + fmt(r.stock) + '″ stiles and rails</text>');
       dyn.innerHTML = o.join("");
       return;
     }
     var st = r.stock, fin = state.finish;
     var wood = ensureTexture(), painted = fin === "painted", partsMode = fin === "parts" || (!wood && !painted);
-    var fillSt0, fillSt1, fillRa0, fillRa1, fillPa, cls;
-    if(wood){
-      var pat = function(id, px, py, rot, inches){
-        var tw = inches * s, th = tw * 4;
-        defs.push('<pattern id="' + id + '" patternUnits="userSpaceOnUse" width="' + tw.toFixed(2) + '" height="' + th.toFixed(2) + '" patternTransform="translate(' + px.toFixed(2) + " " + py.toFixed(2) + ") rotate(" + rot + ')"><use href="#woodimg" transform="scale(' + (tw / 256).toFixed(5) + ')"/></pattern>');
-        return ' fill="url(#' + id + ')"';
-      };
-      fillSt0 = pat("w-s0", X(0) - 0.8 * s, Y(0) - 3 * s, 0, 6);
-      fillSt1 = pat("w-s1", X(W - st) - 2.9 * s, Y(0) - 13 * s, 0, 6);
-      fillRa0 = pat("w-r0", X(st) - 4 * s, Y(0) + 0.6 * s, -90, 6);
-      fillRa1 = pat("w-r1", X(st) - 15 * s, Y(H - st) + 3.4 * s, -90, 6);
-      fillPa = pat("w-p", X(st) - 3 * s, Y(st) - 9 * s, 0, 10);
-      cls = {st:"joint", ra:"joint", pa:"joint"};
-    }else if(painted){
-      fillSt0 = fillSt1 = fillRa0 = fillRa1 = fillPa = ' fill="' + FINISHES.painted.paint + '"';
-      cls = {st:"joint", ra:"joint", pa:"joint"};
-    }else{
-      fillSt0 = fillSt1 = fillRa0 = fillRa1 = fillPa = "";
-      cls = {st:"p-st", ra:"p-ra", pa:"p-pa"};
-    }
-    if(defs.length) o.push("<defs>" + defs.join("") + "</defs>");
+    var stPx = st * s;
 
-    o.push(rect(cls.pa, X(st), Y(st), (W - 2 * st) * s, (H - 2 * st) * s, fillPa));
-    var sh = Math.min(16, Math.max(5, 0.42 * s));
-    o.push(rect("", X(st), Y(st), (W - 2 * st) * s, sh, ' fill="url(#sh-down)"'));
-    o.push(rect("", X(st), Y(st), sh * .8, (H - 2 * st) * s, ' fill="url(#sh-right)"'));
-    o.push('<path d="M' + f1(X(st)) + " " + f1(Y(H - st) - .5) + "H" + f1(X(W - st) - .5) + "V" + f1(Y(st)) + '" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="1"/>');
-    [[0, fillRa0], [H - st, fillRa1]].forEach(function(rp){
-      var ry = rp[0];
-      o.push(rect(cls.ra, X(st), Y(ry), (W - 2 * st) * s, st * s, rp[1]));
-      if(partsMode){
-        var gp = "";
-        GRAIN.slice(0, 3).forEach(function(gr){
-          var yy = ry + st * (0.25 + gr[0] * 0.6), bow = gr[1] * st;
-          gp += "M" + f1(X(st + 0.15)) + " " + f1(Y(yy)) + "Q" + f1(X(W / 2)) + " " + f1(Y(yy + bow)) + " " + f1(X(W - st - 0.15)) + " " + f1(Y(yy));
-        });
-        o.push('<path class="grain-ra" d="' + gp + '"/>');
+    // one door at a time; a pair draws the second door to the right with its own grain
+    (pair ? [0, TW - W] : [0]).forEach(function(L, li){
+      var XL = function(x){ return X(L + x); };
+      var defs = [], fillSt0, fillSt1, fillRa0, fillRa1, fillPa, cls, sfx = li ? "b" : "";
+      if(wood){
+        var pat = function(id, px, py, rot, inches){
+          var tw = inches * s, th = tw * 4;
+          defs.push('<pattern id="' + id + sfx + '" patternUnits="userSpaceOnUse" width="' + tw.toFixed(2) + '" height="' + th.toFixed(2) + '" patternTransform="translate(' + px.toFixed(2) + " " + py.toFixed(2) + ") rotate(" + rot + ')"><use href="#woodimg" transform="scale(' + (tw / 256).toFixed(5) + ')"/></pattern>');
+          return ' fill="url(#' + id + sfx + ')"';
+        };
+        var jx = li * 7.3, jy = li * 11.1;
+        fillSt0 = pat("w-s0", XL(0) - (0.8 + jx) * s, Y(0) - (3 + jy) * s, 0, 6);
+        fillSt1 = pat("w-s1", XL(W - st) - (2.9 + jx) * s, Y(0) - (13 + jy) * s, 0, 6);
+        fillRa0 = pat("w-r0", XL(st) - (4 + jx) * s, Y(0) + 0.6 * s, -90, 6);
+        fillRa1 = pat("w-r1", XL(st) - (15 + jx) * s, Y(H - st) + 3.4 * s, -90, 6);
+        fillPa = pat("w-p", XL(st) - (3 + jx) * s, Y(st) - (9 + jy) * s, 0, 10);
+        cls = {st:"joint", ra:"joint", pa:"joint"};
+      }else if(painted){
+        fillSt0 = fillSt1 = fillRa0 = fillRa1 = fillPa = ' fill="' + FINISHES.painted.paint + '"';
+        cls = {st:"joint", ra:"joint", pa:"joint"};
+      }else{
+        fillSt0 = fillSt1 = fillRa0 = fillRa1 = fillPa = "";
+        cls = {st:"p-st", ra:"p-ra", pa:"p-pa"};
       }
-    });
-    [[0, fillSt0], [W - st, fillSt1]].forEach(function(sp){
-      var sx = sp[0];
-      o.push(rect(cls.st, X(sx), Y(0), st * s, dh, sp[1]));
-      if(partsMode){
-        var gp = "";
-        GRAIN.forEach(function(gr){
-          var xx = sx + st * gr[0], bow = gr[1] * st;
-          gp += "M" + f1(X(xx)) + " " + f1(Y(0.15)) + "Q" + f1(X(xx + bow)) + " " + f1(Y(H / 2)) + " " + f1(X(xx)) + " " + f1(Y(H - 0.15));
-        });
-        o.push('<path class="grain-st" d="' + gp + '"/>');
-      }
-    });
-    if(!partsMode){
-      o.push(rect("", X(0), Y(0), dw, dh, ' fill="url(#sheen)"'));
-      o.push('<path d="M' + f1(X(0) + .7) + " " + f1(Y(H) - 1) + "V" + f1(Y(0) + .7) + "H" + f1(X(W) - 1) + '" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"/>');
-      o.push(rect("outline-real", X(0), Y(0), dw, dh));
-    }else{
-      o.push(rect("outline", X(0), Y(0), dw, dh));
-    }
+      if(defs.length) o.push("<defs>" + defs.join("") + "</defs>");
 
-    if(state.showHidden){
-      var ten = (c.railL - (W - 2 * st)) / 2, hid = [];
-      [0, H - st].forEach(function(ry){
-        hid.push(["hid-ra", X(st - ten), Y(ry), ten * s, st * s]);
-        hid.push(["hid-ra", X(W - st), Y(ry), ten * s, st * s]);
+      o.push(rect(cls.pa, XL(st), Y(st), (W - 2 * st) * s, (H - 2 * st) * s, fillPa));
+      var sh = Math.min(16, Math.max(5, 0.42 * s));
+      o.push(rect("", XL(st), Y(st), (W - 2 * st) * s, sh, ' fill="url(#sh-down)"'));
+      o.push(rect("", XL(st), Y(st), sh * .8, (H - 2 * st) * s, ' fill="url(#sh-right)"'));
+      o.push('<path d="M' + f1(XL(st)) + " " + f1(Y(H - st) - .5) + "H" + f1(XL(W - st) - .5) + "V" + f1(Y(st)) + '" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="1"/>');
+      [[0, fillRa0], [H - st, fillRa1]].forEach(function(rp){
+        var ry = rp[0];
+        o.push(rect(cls.ra, XL(st), Y(ry), (W - 2 * st) * s, st * s, rp[1]));
+        if(partsMode){
+          var gp = "";
+          GRAIN.slice(0, 3).forEach(function(gr){
+            var yy = ry + st * (0.25 + gr[0] * 0.6), bow = gr[1] * st;
+            gp += "M" + f1(XL(st + 0.15)) + " " + f1(Y(yy)) + "Q" + f1(XL(W / 2)) + " " + f1(Y(yy + bow)) + " " + f1(XL(W - st - 0.15)) + " " + f1(Y(yy));
+          });
+          o.push('<path class="grain-ra" d="' + gp + '"/>');
+        }
       });
-      hid.push(["hid-pa", X((W - c.pW) / 2), Y((H - c.pH) / 2), c.pW * s, c.pH * s]);
-      hid.forEach(function(h){ o.push(rect("hid-under", h[1], h[2], h[3], h[4])); });
-      hid.forEach(function(h){ o.push(rect(h[0], h[1], h[2], h[3], h[4])); });
-    }
+      [[0, fillSt0], [W - st, fillSt1]].forEach(function(sp){
+        var sx = sp[0];
+        o.push(rect(cls.st, XL(sx), Y(0), st * s, dh, sp[1]));
+        if(partsMode){
+          var gp = "";
+          GRAIN.forEach(function(gr){
+            var xx = sx + st * gr[0], bow = gr[1] * st;
+            gp += "M" + f1(XL(xx)) + " " + f1(Y(0.15)) + "Q" + f1(XL(xx + bow)) + " " + f1(Y(H / 2)) + " " + f1(XL(xx)) + " " + f1(Y(H - 0.15));
+          });
+          o.push('<path class="grain-st" d="' + gp + '"/>');
+        }
+      });
+      if(!partsMode){
+        o.push(rect("", XL(0), Y(0), dw, dh, ' fill="url(#sheen)"'));
+        o.push('<path d="M' + f1(XL(0) + .7) + " " + f1(Y(H) - 1) + "V" + f1(Y(0) + .7) + "H" + f1(XL(W) - 1) + '" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"/>');
+        o.push(rect("outline-real", XL(0), Y(0), dw, dh));
+      }else{
+        o.push(rect("outline", XL(0), Y(0), dw, dh));
+      }
+
+      if(state.showHidden){
+        var ten = (c.railL - (W - 2 * st)) / 2, hid = [];
+        [0, H - st].forEach(function(ry){
+          hid.push(["hid-ra", XL(st - ten), Y(ry), ten * s, st * s]);
+          hid.push(["hid-ra", XL(W - st), Y(ry), ten * s, st * s]);
+        });
+        hid.push(["hid-pa", XL((W - c.pW) / 2), Y((H - c.pH) / 2), c.pW * s, c.pH * s]);
+        hid.forEach(function(h){ o.push(rect("hid-under", h[1], h[2], h[3], h[4])); });
+        hid.forEach(function(h){ o.push(rect(h[0], h[1], h[2], h[3], h[4])); });
+      }
+
+      if(stPx >= 17 && dh >= 170){
+        [0, W - st].forEach(function(sx){ labels.push(pill("pl-st", XL(sx + st / 2), Y(H / 2), -90, "STILE " + fmt(c.stileL) + "″")); });
+      }
+      if(stPx >= 17 && (W - 2 * st) * s >= 100){
+        [0, H - st].forEach(function(ry){ labels.push(pill("pl-ra", XL(W / 2), Y(ry + st / 2), 0, "RAIL " + fmt(c.railL) + "″")); });
+      }
+      if((W - 2 * st) * s >= 120 && (H - 2 * st) * s >= 70){
+        labels.push(pill("pl-pa", XL(W / 2), Y(H / 2) - 14, 0, "PANEL"));
+        labels.push(pill("pl-pa pl-big", XL(W / 2), Y(H / 2) + 13, 0, fmt(c.pW) + " × " + fmt(c.pH) + "″"));
+      }
+    });
+
     var ov = r.overlay;
     if(state.showOpening){
       o.push(rect("op-under", X(ov), Y(ov), d.w * s, d.h * s));
@@ -777,33 +816,28 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
     }
 
     function tick(cx, cy, c2){ return '<path class="' + c2 + '" d="M' + f1(cx - 4) + " " + f1(cy + 4) + "L" + f1(cx + 4) + " " + f1(cy - 4) + '"/>'; }
-    var top = Y(0) - (narrow ? 26 : 32), left = X(0) - (narrow ? 26 : 36);
-    o.push('<path class="ext" d="M' + f1(X(0)) + " " + f1(Y(0) - 4) + "V" + f1(top - 6) + "M" + f1(X(W)) + " " + f1(Y(0) - 4) + "V" + f1(top - 6) + '"/>');
-    o.push('<path class="dim" d="M' + f1(X(0)) + " " + f1(top) + "H" + f1(X(W)) + '"/>' + tick(X(0), top, "dim") + tick(X(W), top, "dim"));
+    var top = Y(0) - (narrow ? 26 : 32), left = X(0) - (narrow ? 26 : 36), top2 = top - rise;
+    (pair ? [0, TW - W] : [0]).forEach(function(L){
+      o.push('<path class="ext" d="M' + f1(X(L)) + " " + f1(Y(0) - 4) + "V" + f1(top - 6) + "M" + f1(X(L + W)) + " " + f1(Y(0) - 4) + "V" + f1(top - 6) + '"/>');
+      o.push('<path class="dim" d="M' + f1(X(L)) + " " + f1(top) + "H" + f1(X(L + W)) + '"/>' + tick(X(L), top, "dim") + tick(X(L + W), top, "dim"));
+      labels.push(pill("pl-door", X(L + W / 2), top, 0, "DOOR " + fmt(c.W) + "″"));
+    });
+    if(pair){
+      o.push('<path class="ext" d="M' + f1(X(0)) + " " + f1(top - 6) + "V" + f1(top2 - 6) + "M" + f1(X(TW)) + " " + f1(top - 6) + "V" + f1(top2 - 6) + '"/>');
+      o.push('<path class="dim" d="M' + f1(X(0)) + " " + f1(top2) + "H" + f1(X(TW)) + '"/>' + tick(X(0), top2, "dim") + tick(X(TW), top2, "dim"));
+      labels.push(pill("pl-door", X(TW / 2), top2, 0, "PAIR " + fmt(c.fullW) + "″ ÷ 2"));
+    }
     o.push('<path class="ext" d="M' + f1(X(0) - 4) + " " + f1(Y(0)) + "H" + f1(left - 6) + "M" + f1(X(0) - 4) + " " + f1(Y(H)) + "H" + f1(left - 6) + '"/>');
     o.push('<path class="dim" d="M' + f1(left) + " " + f1(Y(0)) + "V" + f1(Y(H)) + '"/>' + tick(left, Y(0), "dim") + tick(left, Y(H), "dim"));
-    var labels = [];
-    labels.push(pill("pl-door", X(W / 2), top, 0, "DOOR " + fmt(c.W) + "″"));
     labels.push(pill("pl-door", left, Y(H / 2), -90, "DOOR " + fmt(c.H) + "″"));
     if(state.showOpening){
-      var bot = Y(H) + (narrow ? 28 : 34), right = X(W) + (narrow ? 26 : 36);
-      o.push('<path class="ext-op" d="M' + f1(X(ov)) + " " + f1(Y(H) + 3) + "V" + f1(bot + 6) + "M" + f1(X(W - ov)) + " " + f1(Y(H) + 3) + "V" + f1(bot + 6) + '"/>');
-      o.push('<path class="dim-op" d="M' + f1(X(ov)) + " " + f1(bot) + "H" + f1(X(W - ov)) + '"/>' + tick(X(ov), bot, "dim-op") + tick(X(W - ov), bot, "dim-op"));
-      o.push('<path class="ext-op" d="M' + f1(X(W) + 3) + " " + f1(Y(ov)) + "H" + f1(right + 6) + "M" + f1(X(W) + 3) + " " + f1(Y(H - ov)) + "H" + f1(right + 6) + '"/>');
+      var bot = Y(H) + (narrow ? 28 : 34), right = X(TW) + (narrow ? 26 : 36);
+      o.push('<path class="ext-op" d="M' + f1(X(ov)) + " " + f1(Y(H) + 3) + "V" + f1(bot + 6) + "M" + f1(X(TW - ov)) + " " + f1(Y(H) + 3) + "V" + f1(bot + 6) + '"/>');
+      o.push('<path class="dim-op" d="M' + f1(X(ov)) + " " + f1(bot) + "H" + f1(X(TW - ov)) + '"/>' + tick(X(ov), bot, "dim-op") + tick(X(TW - ov), bot, "dim-op"));
+      o.push('<path class="ext-op" d="M' + f1(X(TW) + 3) + " " + f1(Y(ov)) + "H" + f1(right + 6) + "M" + f1(X(TW) + 3) + " " + f1(Y(H - ov)) + "H" + f1(right + 6) + '"/>');
       o.push('<path class="dim-op" d="M' + f1(right) + " " + f1(Y(ov)) + "V" + f1(Y(H - ov)) + '"/>' + tick(right, Y(ov), "dim-op") + tick(right, Y(H - ov), "dim-op"));
-      labels.push(pill("pl-op", X(W / 2), bot, 0, "OPENING " + fmt(d.w) + "″"));
+      labels.push(pill("pl-op", X(TW / 2), bot, 0, "OPENING " + fmt(d.w) + "″"));
       labels.push(pill("pl-op", right, Y(H / 2), -90, "OPENING " + fmt(d.h) + "″"));
-    }
-    var stPx = st * s;
-    if(stPx >= 17 && dh >= 170){
-      [0, W - st].forEach(function(sx){ labels.push(pill("pl-st", X(sx + st / 2), Y(H / 2), -90, "STILE " + fmt(c.stileL) + "″")); });
-    }
-    if(stPx >= 17 && (W - 2 * st) * s >= 100){
-      [0, H - st].forEach(function(ry){ labels.push(pill("pl-ra", X(W / 2), Y(ry + st / 2), 0, "RAIL " + fmt(c.railL) + "″")); });
-    }
-    if((W - 2 * st) * s >= 120 && (H - 2 * st) * s >= 70){
-      labels.push(pill("pl-pa", X(W / 2), Y(H / 2) - 14, 0, "PANEL"));
-      labels.push(pill("pl-pa pl-big", X(W / 2), Y(H / 2) + 13, 0, fmt(c.pW) + " × " + fmt(c.pH) + "″"));
     }
     dyn.innerHTML = o.join("") + labels.join("");
     sizePills(dyn);
@@ -888,7 +922,7 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
     var d = cur(), r = state.rules, c = calc(d, r);
     G.root.traverse(function(o){ if(o.geometry) o.geometry.dispose(); });
     G.root.clear();
-    G.hinge = null;
+    G.hinges = [];
     var ow = d.w, oh = d.h, ff = 1.5, T = 0.75, depth = 12;
     var cabW = ow + 2 * ff, cabH = oh + 2 * ff;
     G.size = {w:cabW, h:cabH, d:depth + T};
@@ -909,24 +943,29 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
     if(oh > 16) box(iw, T, depth - 1.5, m.carcass, 0, 0, zc + 0.5, G.root);
     if(c.ok){
       var W = c.W, H = c.H, st = r.stock, rl = W - 2 * st;
-      var hinge = new THREE.Group(); hinge.position.set(-W / 2, 0, 0.06); G.root.add(hinge);
-      var door = new THREE.Group(); door.position.set(W / 2, 0, T / 2); hinge.add(door);
-      box(st, H, T, m.st0, -W / 2 + st / 2, 0, 0, door, [st / 6, H / 24]);
-      box(st, H, T, m.st1, W / 2 - st / 2, 0, 0, door, [st / 6, H / 24]);
-      box(rl, st, T, m.ra0, 0, H / 2 - st / 2, 0, door, [rl / 24, st / 6]);
-      box(rl, st, T, m.ra1, 0, -H / 2 + st / 2, 0, door, [rl / 24, st / 6]);
-      box(c.pW, c.pH, 0.25, m.pa, 0, 0, T / 2 - 0.375, door, [c.pW / 10, c.pH / 40]);
-      var ky = H / 2 - Math.min(3.5, H * 0.18), kx = W / 2 - st / 2;
-      var knob = new THREE.Mesh(new THREE.SphereGeometry(0.6, 28, 18), m.knob);
-      knob.scale.set(1, 1, 0.75); knob.position.set(kx, ky, T / 2 + 0.95); knob.castShadow = true; door.add(knob);
-      var stem = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.26, 0.8, 18), m.knob);
-      stem.rotation.x = Math.PI / 2; stem.position.set(kx, ky, T / 2 + 0.4); stem.castShadow = true; door.add(stem);
-      [H / 2 - 3, -H / 2 + 3].forEach(function(hy){
-        var hg = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 2.4, 16), m.hinge);
-        hg.position.set(0.05, hy, -0.05); hg.castShadow = true; hinge.add(hg);
-      });
-      hinge.rotation.y = -G.open;
-      G.hinge = hinge;
+      // dir 1 = hinged on the left, door reaching right; dir -1 = hinged on the right (second door of a pair)
+      var leaf = function(hx, dir){
+        var hinge = new THREE.Group(); hinge.position.set(hx, 0, 0.06); hinge.userData.dir = dir; G.root.add(hinge);
+        var door = new THREE.Group(); door.position.set(dir * W / 2, 0, T / 2); hinge.add(door);
+        box(st, H, T, m.st0, -W / 2 + st / 2, 0, 0, door, [st / 6, H / 24]);
+        box(st, H, T, m.st1, W / 2 - st / 2, 0, 0, door, [st / 6, H / 24]);
+        box(rl, st, T, m.ra0, 0, H / 2 - st / 2, 0, door, [rl / 24, st / 6]);
+        box(rl, st, T, m.ra1, 0, -H / 2 + st / 2, 0, door, [rl / 24, st / 6]);
+        box(c.pW, c.pH, 0.25, m.pa, 0, 0, T / 2 - 0.375, door, [c.pW / 10, c.pH / 40]);
+        var ky = H / 2 - Math.min(3.5, H * 0.18), kx = dir * (W / 2 - st / 2);
+        var knob = new THREE.Mesh(new THREE.SphereGeometry(0.6, 28, 18), m.knob);
+        knob.scale.set(1, 1, 0.75); knob.position.set(kx, ky, T / 2 + 0.95); knob.castShadow = true; door.add(knob);
+        var stem = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.26, 0.8, 18), m.knob);
+        stem.rotation.x = Math.PI / 2; stem.position.set(kx, ky, T / 2 + 0.4); stem.castShadow = true; door.add(stem);
+        [H / 2 - 3, -H / 2 + 3].forEach(function(hy){
+          var hg = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 2.4, 16), m.hinge);
+          hg.position.set(dir * 0.05, hy, -0.05); hg.castShadow = true; hinge.add(hg);
+        });
+        hinge.rotation.y = -dir * G.open;
+        G.hinges.push(hinge);
+      };
+      if(c.pair){ leaf(-c.fullW / 2, 1); leaf(c.fullW / 2, -1); }
+      else leaf(-W / 2, 1);
     }
     G.floor.position.y = -cabH / 2 - 0.02;
     G.doorW = c.ok ? c.W : ow;
@@ -956,7 +995,7 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
     if(state.view !== "3d" || q3) return;
     q3 = requestAnimationFrame(function(){ q3 = 0; if(state.view !== "3d" || !init3D()) return; build3D(); place3D(); render3D(); });
   }
-  function syncSwing(){ $("#swing").textContent = G.open < 1 ? "Open door" : "Close door"; }
+  function syncSwing(){ var many = G.hinges && G.hinges.length > 1; $("#swing").textContent = (G.open < 1 ? "Open door" : "Close door") + (many ? "s" : ""); }
   function animateOpen(to){
     if(!G.ready) return;
     cancelAnimationFrame(G.anim);
@@ -964,7 +1003,7 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
     (function step(now){
       var p = Math.min(1, (now - t0) / dur), e = p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
       G.open = from + (to - from) * e;
-      if(G.hinge) G.hinge.rotation.y = -G.open;
+      (G.hinges || []).forEach(function(h){ h.rotation.y = -h.userData.dir * G.open; });
       render3D();
       if(p < 1) G.anim = requestAnimationFrame(step); else syncSwing();
     })(t0);
@@ -1016,21 +1055,33 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
     pa:'<svg class="ico" viewBox="0 0 26 26" aria-hidden="true"><rect class="i-pa" x="4.5" y="2.5" width="17" height="21" rx="1.2"/></svg>'
   };
   function thumb(c, r){
-    var bw = 24, bh = 30, sc = Math.min(bw / c.W, bh / c.H), w = c.W * sc, h = c.H * sc, x = (26 - w) / 2, y = (32 - h) / 2, t = Math.max(2, r.stock * sc);
-    return '<svg class="thumb" viewBox="0 0 26 32" aria-hidden="true"><rect class="m-pa" x="' + f1(x + t) + '" y="' + f1(y + t) + '" width="' + f1(Math.max(0, w - 2 * t)) + '" height="' + f1(Math.max(0, h - 2 * t)) + '"/>' +
-      '<rect class="m-ra" x="' + f1(x + t) + '" y="' + f1(y) + '" width="' + f1(Math.max(0, w - 2 * t)) + '" height="' + f1(t) + '"/><rect class="m-ra" x="' + f1(x + t) + '" y="' + f1(y + h - t) + '" width="' + f1(Math.max(0, w - 2 * t)) + '" height="' + f1(t) + '"/>' +
-      '<rect class="m-st" x="' + f1(x) + '" y="' + f1(y) + '" width="' + f1(t) + '" height="' + f1(h) + '"/><rect class="m-st" x="' + f1(x + w - t) + '" y="' + f1(y) + '" width="' + f1(t) + '" height="' + f1(h) + '"/></svg>';
+    var n = c.pair ? 2 : 1, TW = c.W * n, bw = 24, bh = 30, sc = Math.min(bw / TW, bh / c.H), w = c.W * sc, h = c.H * sc;
+    var x0 = (26 - w * n) / 2, y = (32 - h) / 2, t = Math.max(c.pair ? 1.4 : 2, r.stock * sc), out = "";
+    for(var i = 0; i < n; i++){
+      var x = x0 + i * w;
+      out += '<rect class="m-pa" x="' + f1(x + t) + '" y="' + f1(y + t) + '" width="' + f1(Math.max(0, w - 2 * t)) + '" height="' + f1(Math.max(0, h - 2 * t)) + '"/>' +
+        '<rect class="m-ra" x="' + f1(x + t) + '" y="' + f1(y) + '" width="' + f1(Math.max(0, w - 2 * t)) + '" height="' + f1(t) + '"/><rect class="m-ra" x="' + f1(x + t) + '" y="' + f1(y + h - t) + '" width="' + f1(Math.max(0, w - 2 * t)) + '" height="' + f1(t) + '"/>' +
+        '<rect class="m-st" x="' + f1(x) + '" y="' + f1(y) + '" width="' + f1(t) + '" height="' + f1(h) + '"/><rect class="m-st" x="' + f1(x + w - t) + '" y="' + f1(y) + '" width="' + f1(t) + '" height="' + f1(h) + '"/>';
+    }
+    return '<svg class="thumb" viewBox="0 0 26 32" aria-hidden="true">' + out + "</svg>";
   }
+  // "16 1/2 × 31 1/4″" for a single door, "2 × 15 5/8 × 31 1/4″" for a pair
+  function doorSizeH(c){ return (c.pair ? "2 × " : "") + fmtH(c.W) + " × " + fmtH(c.H) + "″"; }
+  function doorSizeT(c){ return (c.pair ? "2 x " : "") + fmt(c.W) + " x " + fmt(c.H); }
+  function doorsWord(n){ return n === 1 ? "1 door" : n + " doors"; }
   function renderEditorDerived(){
     var d = cur(), c = calc(d, state.rules);
-    $("#door-size").innerHTML = fmtH(c.W) + " × " + fmtH(c.H) + "″";
-    $("#door-note").innerHTML = "opening + " + fmtH(state.rules.overlay) + "″ overlay each side";
+    $("#door-lbl").textContent = c.pair ? "Finished doors" : "Finished door";
+    $("#door-size").innerHTML = doorSizeH(c);
+    $("#door-note").innerHTML = c.pair
+      ? "opening + " + fmtH(state.rules.overlay) + "″ overlay all around = " + fmtH(c.fullW) + "″ wide, split in half"
+      : "opening + " + fmtH(state.rules.overlay) + "″ overlay each side";
     $("#stage-h").textContent = d.name ? d.name : "Front view";
-    $("#stage-size").innerHTML = c.ok ? fmtH(c.W) + " × " + fmtH(c.H) + "″" : "";
+    $("#stage-size").innerHTML = c.ok ? doorSizeH(c) : "";
   }
   function renderCut(){
     var d = cur(), c = calc(d, state.rules), r = state.rules;
-    $("#cut-for").textContent = c.q === 1 ? "1 door" : c.q + " doors";
+    $("#cut-for").textContent = c.pair ? doorsWord(c.n) + " (" + c.q + (c.q === 1 ? " pair)" : " pairs)") : doorsWord(c.n);
     if(!c.ok){
       $("#cut").innerHTML = '<div class="warn" role="status">This opening is too small for ' + fmtH(r.stock) + '″ stiles and rails. Check the size.</div>';
       return;
@@ -1045,15 +1096,15 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
   function renderJob(){
     var r = state.rules, total = 0;
     var html = state.doors.map(function(d){
-      var c = calc(d, r); total += c.q;
+      var c = calc(d, r); total += c.n;
       return '<li class="door' + (d.id === state.sel ? " on" : "") + '">' +
         '<button type="button" class="door-pick" data-id="' + d.id + '" aria-current="' + (d.id === state.sel) + '">' + thumb(c, r) +
-        '<span class="nm">' + esc(d.name || "Untitled door") + '</span><span class="q">×' + c.q + "</span>" +
-        '<span class="sz">Opening ' + fmtH(d.w) + " × " + fmtH(d.h) + " · door " + fmtH(c.W) + " × " + fmtH(c.H) + (c.ok ? "" : " · check size") + "</span></button>" +
+        '<span class="nm">' + esc(d.name || "Untitled door") + '</span><span class="q">×' + c.n + "</span>" +
+        '<span class="sz">Opening ' + fmtH(d.w) + " × " + fmtH(d.h) + (c.pair ? " · pair " : " · door ") + doorSizeH(c) + (c.ok ? "" : " · check size") + "</span></button>" +
         '<button type="button" class="door-del" data-del="' + d.id + '" aria-label="Remove ' + esc(d.name || "door") + '">×</button></li>';
     }).join("");
     $("#doors").innerHTML = html;
-    $("#job-count").textContent = total === 1 ? "1 door" : total + " doors";
+    $("#job-count").textContent = doorsWord(total);
   }
   function jobParts(){
     var r = state.rules, st = {}, ra = {}, pa = {}, doors = 0, lin2 = 0, area = 0, bad = 0, badNames = [];
@@ -1062,8 +1113,8 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
     state.doors.forEach(function(d){
       var c = calc(d, r), nm = d.name || "Untitled door";
       if(!c.ok){ bad++; badNames.push(nm); return; }
-      doors += c.q;
-      var who = {name:nm, q:c.q};
+      doors += c.n;
+      var who = {name:nm, q:c.n};
       add(st, c.stileL, c.stiles, who, {L:c.stileL});
       add(ra, c.railL, c.rails, who, {L:c.railL});
       add(pa, c.pW + "x" + c.pH, c.panels, who, {w:c.pW, h:c.pH});
@@ -1099,7 +1150,9 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
   function syncEditor(){
     var d = cur();
     setVal("#name", d.name); setVal("#qty", d.qty); setVal("#w", fmt(d.w)); setVal("#h", fmt(d.h));
-    $("#wr").value = d.w; $("#hr").value = d.h;
+    $("#wr").max = d.pair ? 96 : 48; $("#wr").value = d.w; $("#hr").value = d.h;
+    $("#lv-1").setAttribute("aria-pressed", String(!d.pair)); $("#lv-2").setAttribute("aria-pressed", String(!!d.pair));
+    $("#qty-l").textContent = d.pair ? "Pairs" : "Qty";
     ["w", "h"].forEach(function(k){ $("#" + k).classList.remove("bad"); $("#" + k + "-err").textContent = ""; });
   }
   function syncRules(){
@@ -1125,7 +1178,8 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
     };
     var doorRows = state.doors.map(function(d){
       var c = calc(d, r);
-      return "<tr><td class=\"ps-th\">" + thumb(c, r) + '</td><td class="ps-nm">' + esc(d.name || "Untitled door") + "</td><td>" + c.q + "</td>" +
+      return "<tr><td class=\"ps-th\">" + thumb(c, r) + '</td><td class="ps-nm">' + esc(d.name || "Untitled door") +
+        (c.pair ? '<span class="ps-pair">Pair: ' + fmtH(c.fullW) + "″ split in half</span>" : "") + "</td><td>" + c.n + "</td>" +
         "<td>" + fmtH(d.w) + " × " + fmtH(d.h) + "″</td><td>" + fmtH(c.W) + " × " + fmtH(c.H) + "″</td>" +
         (c.ok ? "<td>" + fmtH(c.stileL) + "″</td><td>" + fmtH(c.railL) + "″</td><td>" + fmtH(c.pW) + " × " + fmtH(c.pH) + "″</td>"
               : '<td colspan="3" class="ps-bad">Too small for ' + fmtH(r.stock) + "″ stiles and rails. Check the size.</td>") + "</tr>";
@@ -1142,7 +1196,7 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
       sec("pa", "Panels", "width × height", j.pa, function(p){ return fmtH(p.w) + " × " + fmtH(p.h) + "″"; }) +
       '<div class="ps-tots"><div><b>' + j.doors + "</b>" + (j.doors === 1 ? "door" : "doors") + "</div><div><b>" + j.lin.toFixed(1) + "</b>lin. ft of " + fmtH(r.stock) +
         "″ stock</div><div><b>" + j.sqft.toFixed(1) + '</b>sq ft of panel</div></div><p class="ps-small">Totals are before kerf and waste. Sizes round to the nearest 1/16″. Made with Cabinet Door Builder' + (site ? " · " + site : "") + ".</p>" +
-      '<section class="ps-sec"><h2>Doors in this job</h2><table class="ps-t ps-doors"><thead><tr><th class="ps-th"></th><th>Door / location</th><th>Qty</th><th>Opening</th><th>Door</th><th>Stiles</th><th>Rails</th><th>Panel</th></tr></thead><tbody>' +
+      '<section class="ps-sec"><h2>Doors in this job</h2><table class="ps-t ps-doors"><thead><tr><th class="ps-th"></th><th>Door / location</th><th>Doors</th><th>Opening</th><th>Each door</th><th>Stiles</th><th>Rails</th><th>Panel</th></tr></thead><tbody>' +
         doorRows + "</tbody></table></section>";
   }
   var baseTitle = document.title;
@@ -1171,6 +1225,9 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
   $("#name").addEventListener("input", function(e){ cur().name = e.target.value; renderEditorDerived(); renderJob(); save(); });
   $("#qty").addEventListener("input", function(e){ var n = parseInt(e.target.value, 10); if(n >= 1){ cur().qty = n; renderAll(); } });
   $("#qty").addEventListener("blur", function(e){ e.target.value = cur().qty; });
+  [["#lv-1", false], ["#lv-2", true]].forEach(function(b){
+    $(b[0]).addEventListener("click", function(){ var d = cur(); if(!!d.pair === b[1]) return; d.pair = b[1]; syncEditor(); renderAll(); });
+  });
   function setDim(k, v, fromText){
     var d = cur();
     d[k] = Math.max(1, r16(v));
@@ -1228,8 +1285,8 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
   });
   function addDoor(copy){
     var d = cur(), id = uid();
-    var nd = copy ? {id:id, name:(d.name || "Door") + " copy", qty:d.qty, w:d.w, h:d.h}
-                  : {id:id, name:"Door " + (state.doors.length + 1), qty:1, w:d.w, h:d.h};
+    var nd = copy ? {id:id, name:(d.name || "Door") + " copy", qty:d.qty, w:d.w, h:d.h, pair:!!d.pair}
+                  : {id:id, name:"Door " + (state.doors.length + 1), qty:1, w:d.w, h:d.h, pair:!!d.pair};
     var i = state.doors.indexOf(d);
     state.doors.splice(i + 1, 0, nd);
     state.sel = id; syncEditor(); renderAll();
@@ -1257,7 +1314,7 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
     lines.push("");
     state.doors.forEach(function(d){
       var c = calc(d, r);
-      lines.push((d.name || "Door") + " (x" + c.q + "): opening " + fmt(d.w) + " x " + fmt(d.h) + ", door " + fmt(c.W) + " x " + fmt(c.H) + (c.ok ? "" : "  ** too small, check size **"));
+      lines.push((d.name || "Door") + " (x" + c.n + (c.pair ? " doors, " + c.q + (c.q === 1 ? " pair" : " pairs") : "") + "): opening " + fmt(d.w) + " x " + fmt(d.h) + (c.pair ? ", pair " : ", door ") + doorSizeT(c) + (c.ok ? "" : "  ** too small, check size **"));
     });
     lines.push("");
     lines.push("STILES (" + fmt(r.stock) + "\" wide)");
