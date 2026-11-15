@@ -1,0 +1,1205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cabinet Door Builder</title>
+<meta name="description" content="Free cut list calculator for five-piece shaker cabinet doors. Type the cabinet opening and get stile, rail and panel sizes, a 3D door and a job cut list.">
+<meta name="theme-color" content="#1F2C3B">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Door Builder">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Cabinet Door Builder">
+<meta property="og:description" content="Free cut list calculator for five-piece shaker cabinet doors. Type the cabinet opening and get stile, rail and panel sizes, a 3D door and a job cut list.">
+<meta property="og:url" content="https://nagellams.github.io/cabinet-door-builder/">
+<meta property="og:image" content="https://nagellams.github.io/cabinet-door-builder/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: a shop bench under a blueprint header. Sizes, cut list and job on the left; the door on the right as a turnable 3D cabinet or a to-scale shop drawing. Stacks on phones with the door right under the sizes. */
+:root{
+  --bg:#EEF1F4; --surface:#FFFFFF; --stage:#F8FAFC; --stage-edge:#E6EBF0; --sunk:#EDF0F3;
+  --ink:#1B232C; --muted:#5A6571; --line:#D6DCE2; --grid:#E3E8ED; --grid-major:#CDD5DE;
+  --slate:#3F5068; --slate-tint:#E3E9F1;
+  --gold:#8F6200; --gold-line:#C4931C; --gold-tint:#FFF4D2;
+  --stile:#2D6CAD; --stile-tint:#D9E7F6;
+  --rail:#477629; --rail-tint:#DFEDD4;
+  --panel:#72549B; --panel-tint:#EAE3F4;
+  --danger:#B42318; --danger-tint:#FDECEA;
+  --focus:#2D6CAD;
+  --hero-a:#1F2C3B; --hero-b:#2D4157; --hero-ink:#F3F6F9; --hero-muted:#B8C4D1; --hero-line:rgba(255,255,255,.15); --hero-grid:rgba(255,255,255,.07);
+  --shadow:0 1px 2px rgba(20,30,45,.06),0 6px 18px rgba(20,30,45,.06);
+  --font-display:"Barlow Semi Condensed","Arial Narrow",Arial,sans-serif;
+  --font-body:"Barlow","Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1318; --surface:#171D24; --stage:#141A21; --stage-edge:#0D1116; --sunk:#1E252D;
+    --ink:#E6EAEE; --muted:#97A1AC; --line:#2A323B; --grid:#1B222A; --grid-major:#28313B;
+    --slate:#AEBCD0; --slate-tint:#222B36;
+    --gold:#E4B84E; --gold-line:#CDA33C; --gold-tint:#2C2617;
+    --stile:#72ABE0; --stile-tint:#19293A;
+    --rail:#93BF70; --rail-tint:#1D2C18;
+    --panel:#B19AD9; --panel-tint:#282136;
+    --danger:#F0857B; --danger-tint:#3A1D1A;
+    --focus:#72ABE0;
+    --hero-a:#121922; --hero-b:#1C2836; --hero-ink:#EEF2F6; --hero-muted:#9FACBA; --hero-line:rgba(255,255,255,.12); --hero-grid:rgba(255,255,255,.05);
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 22px rgba(0,0,0,.25);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1318; --surface:#171D24; --stage:#141A21; --stage-edge:#0D1116; --sunk:#1E252D;
+  --ink:#E6EAEE; --muted:#97A1AC; --line:#2A323B; --grid:#1B222A; --grid-major:#28313B;
+  --slate:#AEBCD0; --slate-tint:#222B36;
+  --gold:#E4B84E; --gold-line:#CDA33C; --gold-tint:#2C2617;
+  --stile:#72ABE0; --stile-tint:#19293A;
+  --rail:#93BF70; --rail-tint:#1D2C18;
+  --panel:#B19AD9; --panel-tint:#282136;
+  --danger:#F0857B; --danger-tint:#3A1D1A;
+  --focus:#72ABE0;
+  --hero-a:#121922; --hero-b:#1C2836; --hero-ink:#EEF2F6; --hero-muted:#9FACBA; --hero-line:rgba(255,255,255,.12); --hero-grid:rgba(255,255,255,.05);
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 22px rgba(0,0,0,.25);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.45;font-variant-numeric:tabular-nums}
+h1,h2,h3{font-family:var(--font-display);margin:0;text-wrap:balance}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.gutter{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* blueprint header */
+.hero{position:relative;overflow:hidden;background:linear-gradient(120deg,var(--hero-a),var(--hero-b));color:var(--hero-ink)}
+.hero::before{content:"";position:absolute;inset:0;background-image:linear-gradient(var(--hero-grid) 1px,transparent 1px),linear-gradient(90deg,var(--hero-grid) 1px,transparent 1px);background-size:22px 22px;-webkit-mask-image:linear-gradient(100deg,transparent 0%,#000 45%,#000 100%);mask-image:linear-gradient(100deg,transparent 0%,#000 45%,#000 100%);pointer-events:none}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:4px;background:linear-gradient(90deg,var(--gold-line) 0 25%,var(--stile) 25% 50%,var(--rail) 50% 75%,var(--panel) 75%)}
+.hero-inner{position:relative;max-width:1280px;margin:0 auto;padding-block:26px 30px;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px 28px}
+.brand{display:flex;align-items:center;gap:16px;min-width:0}
+.mark{width:44px;height:56px;flex:0 0 auto;filter:drop-shadow(0 4px 8px rgba(0,0,0,.35))}
+.m-st{fill:var(--stile-tint);stroke:var(--stile);stroke-width:1.4}
+.m-ra{fill:var(--rail-tint);stroke:var(--rail);stroke-width:1.4}
+.m-pa{fill:var(--panel-tint);stroke:var(--panel);stroke-width:1.4}
+.hero h1{font-size:36px;font-weight:700;letter-spacing:.3px;line-height:1}
+.hero p{margin:7px 0 0;color:var(--hero-muted);max-width:58ch}
+.rules-line{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--hero-line);background:rgba(255,255,255,.06);border-radius:999px;padding:4px 11px;font-size:13px;color:var(--hero-muted);white-space:nowrap}
+.chip b{color:var(--hero-ink);font-weight:600}
+
+/* layout */
+.wrap{max-width:1280px;margin:0 auto;padding-block:20px 56px}
+.layout{display:grid;gap:16px;grid-template-columns:minmax(0,1fr);grid-template-areas:"editor" "stage" "cut" "job" "rules"}
+.a-editor{grid-area:editor}.a-stage{grid-area:stage}.a-cut{grid-area:cut}.a-job{grid-area:job}.a-rules{grid-area:rules}
+@media (min-width:960px){
+  .layout{grid-template-columns:minmax(0,440px) minmax(0,1fr);grid-template-areas:"editor stage" "cut stage" "job stage" "rules stage";grid-template-rows:auto auto auto 1fr}
+  .a-stage{align-self:start;position:sticky;top:16px}
+}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;min-width:0;box-shadow:var(--shadow)}
+.card-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px}
+.card-head h2{font-size:20px;font-weight:600}
+.eyebrow{font-family:var(--font-display);font-size:12px;font-weight:600;letter-spacing:.9px;text-transform:uppercase;color:var(--muted)}
+
+/* editor */
+.row2{display:grid;grid-template-columns:minmax(0,1fr) 92px;gap:12px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label{font-family:var(--font-display);font-size:12px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
+.in{width:100%;border:1px solid var(--line);background:var(--gold-tint);border-radius:9px;padding:9px 11px;font-size:16px;min-width:0;transition:border-color .15s,box-shadow .15s}
+.in:hover{border-color:var(--gold-line)}
+.in:focus{border-color:var(--gold-line);box-shadow:0 0 0 3px color-mix(in srgb,var(--gold-line) 25%,transparent);outline:none}
+.in.bad{border-color:var(--danger);background:var(--danger-tint)}
+.dims{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}
+.dim-row{display:flex;align-items:stretch;gap:6px}
+.dim-row .in{text-align:center;font-family:var(--font-display);font-size:22px;font-weight:600;padding:7px 4px}
+.step{flex:0 0 40px;border:1px solid var(--line);background:var(--sunk);border-radius:9px;font-size:22px;line-height:1;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation;transition:background .12s,border-color .12s}
+.step:hover{border-color:var(--slate)}
+.step:active{background:var(--slate-tint)}
+input[type=range]{width:100%;accent-color:var(--gold-line);margin:8px 0 0}
+.hint{font-size:13px;color:var(--muted);margin:12px 0 0}
+.err{font-size:13px;color:var(--danger);margin:2px 0 0}
+.err:empty{display:none}
+.door-size{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.door-size .big{font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--slate)}
+.door-size .note{font-size:13px;color:var(--muted)}
+
+/* fractions */
+.fr{white-space:nowrap}
+.fr sup,.fr sub{font-size:.64em;line-height:0;position:relative}
+.fr sup{top:-.42em}
+.fr sub{top:.06em}
+.sp{display:inline-block;width:.16em}
+
+/* stage */
+.stage{padding:0;overflow:hidden;display:flex;flex-direction:column}
+.stage-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.stage-name{display:flex;align-items:baseline;gap:10px;min-width:0}
+.stage-title{font-family:var(--font-display);font-size:20px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stage-size{font-family:var(--font-display);font-weight:600;color:var(--muted);white-space:nowrap}
+.seg{display:inline-flex;background:var(--sunk);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;border-radius:7px;padding:5px 14px;font-family:var(--font-display);font-weight:600;font-size:14px;letter-spacing:.3px;color:var(--muted);cursor:pointer;transition:background .15s,color .15s}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.seg button:disabled{opacity:.45;cursor:not-allowed}
+.view{position:relative;height:clamp(440px,calc(100vh - 230px),860px);background:radial-gradient(120% 95% at 50% 40%,var(--stage) 0%,var(--stage) 50%,var(--stage-edge) 100%)}
+@media (max-width:959px){.view{height:min(540px,calc(100vw * 1.3))}}
+.view svg,.view canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#gl-host{cursor:grab}
+#gl-host.dragging{cursor:grabbing}
+.gl-ctrl{position:absolute;left:12px;bottom:12px;display:flex;flex-wrap:wrap;gap:6px}
+.glass{border:1px solid var(--line);background:color-mix(in srgb,var(--surface) 84%,transparent);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border-radius:999px;padding:7px 14px;font-weight:600;font-size:13px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.glass:hover{border-color:var(--slate)}
+.gl-hint{position:absolute;right:14px;bottom:16px;font-size:12px;color:var(--muted);pointer-events:none}
+.gl-note{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--muted)}
+.finish{display:flex;flex-wrap:wrap;gap:6px;padding:12px 16px 6px;border-top:1px solid var(--line)}
+.finish-label{font-family:var(--font-display);font-size:12px;font-weight:600;letter-spacing:.9px;text-transform:uppercase;color:var(--muted);align-self:center;margin-right:4px}
+.fin{position:relative;display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:4px 11px 4px 5px;font-size:13px;cursor:pointer;background:var(--surface);user-select:none;transition:border-color .12s,background .12s}
+.fin input{position:absolute;opacity:0;pointer-events:none}
+.fin:hover{border-color:var(--slate)}
+.fin:has(input:checked){border-color:var(--slate);background:var(--slate-tint);font-weight:600}
+.fin:has(input:focus-visible){outline:2px solid var(--focus);outline-offset:2px}
+.dot{width:18px;height:18px;border-radius:50%;border:1px solid rgba(0,0,0,.18);flex:0 0 auto}
+.d-parts{background:conic-gradient(var(--stile) 0 33%,var(--rail) 0 66%,var(--panel) 0)}
+.d-maple{background:linear-gradient(90deg,#EBD3A6,#D9B47D 45%,#EED9B2 60%,#DDBA86)}
+.d-oak{background:linear-gradient(90deg,#D8BC8E,#B8925E 40%,#DDC294 55%,#C4A06C)}
+.d-cherry{background:linear-gradient(90deg,#BE774E,#94512F 45%,#C4825A 60%,#A35E3A)}
+.d-walnut{background:linear-gradient(90deg,#6E4C35,#4A3222 45%,#7A5640 60%,#563A28)}
+.d-painted{background:#EFEDE7}
+.legend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;padding:8px 16px 12px;font-size:13px;color:var(--muted)}
+.toggles{display:flex;flex-wrap:wrap;gap:6px}
+.tog{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:4px 11px 4px 5px;font-size:13px;color:var(--ink);cursor:pointer;background:var(--surface);user-select:none}
+.tog input{position:absolute;opacity:0;pointer-events:none}
+.tog .sw-track{width:26px;height:16px;border-radius:999px;background:var(--line);position:relative;transition:background .15s}
+.tog .sw-track::after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--surface);box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
+.tog input:checked + .sw-track{background:var(--slate)}
+.tog input:checked + .sw-track::after{transform:translateX(10px)}
+.tog input:focus-visible + .sw-track{outline:2px solid var(--focus);outline-offset:2px}
+.key{display:inline-flex;align-items:center;gap:6px}
+.sw{width:14px;height:14px;border-radius:4px;border:1.5px solid;flex:0 0 auto}
+.sw.st{background:var(--stile-tint);border-color:var(--stile)}
+.sw.ra{background:var(--rail-tint);border-color:var(--rail)}
+.sw.pa{background:var(--panel-tint);border-color:var(--panel)}
+.sw.op{background:transparent;border:1.5px dashed var(--gold-line)}
+
+/* svg drawing */
+.g-minor{stroke:var(--grid);stroke-width:1;fill:none}
+.g-major{stroke:var(--grid-major);stroke-width:1;fill:none}
+.p-st{fill:var(--stile-tint);stroke:var(--stile);stroke-width:1.4}
+.p-ra{fill:var(--rail-tint);stroke:var(--rail);stroke-width:1.4}
+.p-pa{fill:var(--panel-tint);stroke:var(--panel);stroke-width:1.4}
+.grain-st{stroke:var(--stile);stroke-width:1;fill:none;opacity:.25}
+.grain-ra{stroke:var(--rail);stroke-width:1;fill:none;opacity:.28}
+.joint{stroke:rgba(35,22,10,.5);stroke-width:1}
+.outline{fill:none;stroke:var(--slate);stroke-width:2}
+.outline-real{fill:none;stroke:rgba(25,18,10,.65);stroke-width:1.4}
+.hid-under{fill:none;stroke:var(--stage);stroke-width:3;opacity:.55}
+.hid-ra{fill:none;stroke:var(--rail);stroke-width:1.3;stroke-dasharray:5 4}
+.hid-pa{fill:none;stroke:var(--panel);stroke-width:1.3;stroke-dasharray:5 4}
+.op-under{fill:none;stroke:var(--stage);stroke-width:3.5;opacity:.6}
+.opening{fill:none;stroke:var(--gold-line);stroke-width:1.7;stroke-dasharray:8 5}
+.dim{stroke:var(--slate);stroke-width:1;fill:none}
+.dim-op{stroke:var(--gold-line);stroke-width:1;fill:none}
+.ext{stroke:var(--slate);stroke-width:.8;fill:none;opacity:.55}
+.ext-op{stroke:var(--gold-line);stroke-width:.8;fill:none;opacity:.8}
+.pill text{font-family:var(--font-display);font-weight:600;font-size:12.5px;letter-spacing:.5px}
+.pill rect{stroke-width:1}
+.pl-door rect{fill:var(--surface);stroke:var(--slate)}
+.pl-door text{fill:var(--slate)}
+.pl-op rect{fill:var(--surface);stroke:var(--gold-line)}
+.pl-op text{fill:var(--gold)}
+.pl-st rect{fill:var(--stile-tint);stroke:var(--stile)}
+.pl-st text{fill:var(--stile)}
+.pl-ra rect{fill:var(--rail-tint);stroke:var(--rail)}
+.pl-ra text{fill:var(--rail)}
+.pl-pa rect{fill:var(--panel-tint);stroke:var(--panel)}
+.pl-pa text{fill:var(--panel)}
+.pl-big text{font-size:15px;font-weight:700}
+.t-warn{font-family:var(--font-display);font-weight:600;fill:var(--danger);font-size:15px}
+
+/* cut list */
+.cut{width:100%;border-collapse:collapse}
+.cut th{font-family:var(--font-display);font-size:12px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);text-align:right;padding:0 6px 7px;border-bottom:1.5px solid var(--slate)}
+.cut th:first-child,.cut td:first-child{text-align:left;padding-left:0}
+.cut th:last-child,.cut td:last-child{padding-right:0}
+.cut td{padding:11px 6px;border-bottom:1px solid var(--line);text-align:right;font-size:16px;vertical-align:middle}
+.cut tr:last-child td{border-bottom:0}
+.cut td.size{font-family:var(--font-display);font-size:20px;font-weight:700}
+.cut td.qty{font-family:var(--font-display);font-size:18px;font-weight:600}
+.part{display:inline-flex;align-items:center;gap:10px;font-weight:600}
+.ico{width:26px;height:26px;flex:0 0 auto}
+.i-st{fill:var(--stile-tint);stroke:var(--stile);stroke-width:1.6}
+.i-ra{fill:var(--rail-tint);stroke:var(--rail);stroke-width:1.6}
+.i-pa{fill:var(--panel-tint);stroke:var(--panel);stroke-width:1.6}
+.cut td.dimw{color:var(--muted)}
+.warn{display:flex;gap:8px;align-items:flex-start;background:var(--danger-tint);color:var(--danger);border-radius:9px;padding:10px 12px;font-size:14px;margin-bottom:12px}
+.diagram{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.diagram-head{display:flex;justify-content:space-between;gap:12px;margin-bottom:10px}
+#cutsvg{display:block;width:100%;overflow:visible}
+
+/* job */
+.job-name{margin-bottom:14px}
+.doors{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.door{display:flex;align-items:stretch;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);transition:border-color .12s,background .12s}
+.door:hover{border-color:var(--slate)}
+.door.on{border-color:var(--slate);background:var(--slate-tint)}
+.door-pick{flex:1;min-width:0;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:2px 12px;text-align:left;border:0;background:transparent;padding:9px 12px;cursor:pointer}
+.door-pick .thumb{grid-row:1 / span 2;width:26px;height:32px}
+.door-pick .nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.door-pick .q{font-family:var(--font-display);font-weight:700;color:var(--slate);font-size:17px}
+.door-pick .sz{grid-column:2 / -1;font-size:13px;color:var(--muted)}
+.door-del{flex:0 0 42px;border:0;border-left:1px solid var(--line);background:transparent;color:var(--muted);font-size:20px;cursor:pointer}
+.door-del:hover{color:var(--danger);background:var(--danger-tint)}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:8px 14px;font-weight:600;cursor:pointer;transition:border-color .12s,filter .12s}
+.btn:hover{border-color:var(--slate)}
+.btn.primary{background:var(--slate);border-color:var(--slate);color:var(--surface)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.armed{border-color:var(--danger);color:var(--danger);background:var(--danger-tint)}
+.groups{display:flex;flex-direction:column;gap:16px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.grp h3{font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.grp h3 .ico{width:22px;height:22px}
+.grp h3 small{font-family:var(--font-body);font-weight:400;color:var(--muted);font-size:13px}
+.grp ul{list-style:none;margin:0;padding:0}
+.grp li{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:16px}
+.grp li:last-child{border-bottom:0}
+.grp li .n{font-family:var(--font-display);font-weight:700;min-width:3.2em;color:var(--muted)}
+.grp li .l{font-family:var(--font-display);font-weight:700;font-size:19px}
+.totals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px}
+.tot{background:var(--sunk);border-radius:10px;padding:11px 12px}
+.tot .v{font-family:var(--font-display);font-size:24px;font-weight:700;line-height:1.1}
+.tot .k{font-size:12px;color:var(--muted)}
+.copy-box{width:100%;margin-top:10px;min-height:140px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;border:1px solid var(--line);border-radius:9px;padding:8px;background:var(--sunk);color:var(--ink)}
+.status{font-size:13px;color:var(--muted);align-self:center}
+
+/* rules */
+details.card>summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+details.card>summary::-webkit-details-marker{display:none}
+details.card>summary h2{font-size:20px;font-weight:600}
+details.card>summary .eyebrow::after{content:" ▸"}
+details[open].card>summary .eyebrow::after{content:" ▾"}
+.rules{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
+.rules .field .in{font-family:var(--font-display);font-size:18px;font-weight:600}
+.rules .help{font-size:12px;color:var(--muted)}
+@media (max-width:560px){.dims{grid-template-columns:minmax(0,1fr)}.step{flex-basis:56px}.dim-row .in{font-size:26px}.hero h1{font-size:30px}.mark{width:38px;height:48px}.gl-hint{display:none}}
+@media (max-width:420px){.rules{grid-template-columns:minmax(0,1fr)}.totals{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner gutter">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 40 50" aria-hidden="true">
+        <rect class="m-pa" x="8" y="8" width="24" height="34"/>
+        <rect class="m-ra" x="8" y="1" width="24" height="7"/>
+        <rect class="m-ra" x="8" y="42" width="24" height="7"/>
+        <rect class="m-st" x="1" y="1" width="7" height="48"/>
+        <rect class="m-st" x="32" y="1" width="7" height="48"/>
+      </svg>
+      <div>
+        <h1>Cabinet Door Builder</h1>
+        <p>For five-piece shaker doors with a flat panel. Type the cabinet opening and the cut list and door update as you go.</p>
+      </div>
+    </div>
+    <div class="rules-line" id="rules-line" aria-label="Door rules in use"></div>
+  </div>
+</header>
+
+<div class="wrap gutter">
+  <main class="layout">
+    <section class="card a-editor" aria-labelledby="ed-h">
+      <div class="card-head"><h2 id="ed-h">Door</h2><span class="eyebrow">Opening size, inches</span></div>
+      <div class="row2">
+        <div class="field"><label for="name">Door / location</label><input id="name" class="in" autocomplete="off"></div>
+        <div class="field"><label for="qty">Qty</label><input id="qty" class="in" type="number" min="1" step="1" inputmode="numeric"></div>
+      </div>
+      <div class="dims">
+        <div class="field">
+          <label for="w">Opening width</label>
+          <div class="dim-row">
+            <button class="step" type="button" data-k="w" data-d="-1" aria-label="Opening width minus 1/16 inch">−</button>
+            <input id="w" class="in" autocomplete="off" spellcheck="false" aria-describedby="w-err">
+            <button class="step" type="button" data-k="w" data-d="1" aria-label="Opening width plus 1/16 inch">+</button>
+          </div>
+          <input type="range" id="wr" min="6" max="48" step="0.0625" aria-label="Opening width slider">
+          <div class="err" id="w-err" aria-live="polite"></div>
+        </div>
+        <div class="field">
+          <label for="h">Opening height</label>
+          <div class="dim-row">
+            <button class="step" type="button" data-k="h" data-d="-1" aria-label="Opening height minus 1/16 inch">−</button>
+            <input id="h" class="in" autocomplete="off" spellcheck="false" aria-describedby="h-err">
+            <button class="step" type="button" data-k="h" data-d="1" aria-label="Opening height plus 1/16 inch">+</button>
+          </div>
+          <input type="range" id="hr" min="6" max="96" step="0.0625" aria-label="Opening height slider">
+          <div class="err" id="h-err" aria-live="polite"></div>
+        </div>
+      </div>
+      <p class="hint">Type 15 1/2, 15-1/2 or 15.5. Hold + or − to walk the size in 1/16″ steps, or use the arrow keys (Shift for 1/2″).</p>
+      <div class="door-size"><span class="eyebrow">Finished door</span><span class="big" id="door-size"></span><span class="note" id="door-note"></span></div>
+    </section>
+
+    <section class="card stage a-stage" aria-labelledby="stage-h">
+      <div class="stage-bar">
+        <div class="stage-name"><h2 class="stage-title" id="stage-h">Front view</h2><span class="stage-size" id="stage-size"></span></div>
+        <div class="seg" role="group" aria-label="View">
+          <button type="button" id="v-3d" aria-pressed="true">3D</button>
+          <button type="button" id="v-dr" aria-pressed="false">Drawing</button>
+        </div>
+      </div>
+      <div class="view" id="gl-host">
+        <div class="gl-ctrl">
+          <button class="glass" type="button" id="swing">Open door</button>
+          <button class="glass" type="button" id="reset-view">Reset view</button>
+        </div>
+        <div class="gl-hint">Drag to turn the cabinet</div>
+        <div class="gl-note" id="gl-note" hidden>The 3D view needs WebGL, which this browser has turned off. The drawing still works.</div>
+      </div>
+      <div class="view" id="svg-host" hidden>
+        <svg id="svg" role="img" aria-label="Shop drawing of the cabinet door">
+          <defs>
+            <image id="woodimg" width="256" height="1024" preserveAspectRatio="none" href=""/>
+            <linearGradient id="sh-down" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".38"/><stop offset=".45" stop-color="#000" stop-opacity=".12"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient>
+            <linearGradient id="sh-right" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#000" stop-opacity=".26"/><stop offset=".5" stop-color="#000" stop-opacity=".08"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient>
+            <linearGradient id="sheen" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".10"/></linearGradient>
+            <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="9"/></filter>
+          </defs>
+          <g id="dyn"></g>
+        </svg>
+      </div>
+      <div class="finish" role="radiogroup" aria-label="Finish">
+        <span class="finish-label">Finish</span>
+        <label class="fin"><input type="radio" name="finish" value="maple"><span class="dot d-maple"></span>Maple</label>
+        <label class="fin"><input type="radio" name="finish" value="oak"><span class="dot d-oak"></span>White oak</label>
+        <label class="fin"><input type="radio" name="finish" value="cherry"><span class="dot d-cherry"></span>Cherry</label>
+        <label class="fin"><input type="radio" name="finish" value="walnut"><span class="dot d-walnut"></span>Walnut</label>
+        <label class="fin"><input type="radio" name="finish" value="painted"><span class="dot d-painted"></span>Painted</label>
+        <label class="fin"><input type="radio" name="finish" value="parts"><span class="dot d-parts"></span>Color by part</label>
+      </div>
+      <div class="legend" id="legend" hidden>
+        <div class="toggles">
+          <label class="tog"><input type="checkbox" id="t-open"><span class="sw-track"></span>Opening</label>
+          <label class="tog"><input type="checkbox" id="t-hid"><span class="sw-track"></span>Joinery</label>
+        </div>
+        <span class="key"><span class="sw st"></span>Stiles</span>
+        <span class="key"><span class="sw ra"></span>Rails</span>
+        <span class="key"><span class="sw pa"></span>Panel</span>
+        <span class="key"><span class="sw op"></span>Cabinet opening</span>
+        <span class="key" id="grid-note"></span>
+      </div>
+    </section>
+
+    <section class="card a-cut" aria-labelledby="cut-h">
+      <div class="card-head"><h2 id="cut-h">Cut list</h2><span class="eyebrow" id="cut-for"></span></div>
+      <div id="cut"></div>
+      <div class="diagram" id="diagram">
+        <div class="diagram-head"><span class="eyebrow">Pieces for one door</span><span class="eyebrow">Drawn to scale</span></div>
+        <svg id="cutsvg" role="img" aria-label="The pieces for one door, drawn to scale">
+          <defs>
+            <image id="woodimg2" width="256" height="1024" preserveAspectRatio="none" href=""/>
+            <linearGradient id="sheen2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".12"/></linearGradient>
+            <filter id="soft2" x="-10%" y="-40%" width="120%" height="180%"><feGaussianBlur stdDeviation="3"/></filter>
+          </defs>
+          <g id="cd-dyn"></g>
+        </svg>
+      </div>
+    </section>
+
+    <section class="card a-job" aria-labelledby="job-h">
+      <div class="card-head"><h2 id="job-h">Job</h2><span class="eyebrow" id="job-count"></span></div>
+      <div class="field job-name"><label for="job">Job / customer</label><input id="job" class="in" autocomplete="off" placeholder="Smith kitchen"></div>
+      <ul class="doors" id="doors"></ul>
+      <div class="btns">
+        <button class="btn primary" type="button" id="add">Add door</button>
+        <button class="btn" type="button" id="dup">Duplicate door</button>
+        <button class="btn" type="button" id="clear">New job</button>
+      </div>
+      <div class="groups" id="groups"></div>
+      <div class="btns">
+        <button class="btn" type="button" id="copy">Copy job cut list</button>
+        <span class="status" id="copy-status" aria-live="polite"></span>
+      </div>
+      <textarea class="copy-box" id="copy-box" readonly hidden aria-label="Job cut list text"></textarea>
+      <p class="hint">Your doors are saved in this browser only. Nobody else can see them.</p>
+    </section>
+
+    <details class="card a-rules" id="rules-card">
+      <summary><h2>Door rules</h2><span class="eyebrow">Edit</span></summary>
+      <div class="rules">
+        <div class="field"><label for="r-overlay">Overlay, each side</label><input id="r-overlay" class="in" data-r="overlay" autocomplete="off"><span class="help">Added to all four sides of the opening.</span></div>
+        <div class="field"><label for="r-stock">Stile &amp; rail width</label><input id="r-stock" class="in" data-r="stock" autocomplete="off"><span class="help">Width of every stile and rail.</span></div>
+        <div class="field"><label for="r-rail">Rail deduction</label><input id="r-rail" class="in" data-r="railDeduct" autocomplete="off"><span class="help">Rail length = door width minus this.</span></div>
+        <div class="field"><label for="r-pw">Panel width deduction</label><input id="r-pw" class="in" data-r="panelWDeduct" autocomplete="off"><span class="help">Panel width = rail length minus this.</span></div>
+        <div class="field"><label for="r-ph">Panel height deduction</label><input id="r-ph" class="in" data-r="panelHDeduct" autocomplete="off"><span class="help">Panel height = stile length minus this.</span></div>
+      </div>
+      <div class="btns"><button class="btn" type="button" id="r-reset">Reset to defaults</button><span class="status">Sizes round to the nearest 1/16″. Your rules are saved in this browser only.</span></div>
+    </details>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+  "use strict";
+  var KEY = "cabinet-door-builder-v1";
+  var DEFAULT_RULES = {overlay:0.5, stock:2.25, railDeduct:3.625, panelWDeduct:0.0625, panelHDeduct:3.6875};
+  var FINISHES = {
+    maple:  {base:[234,208,163], dark:[188,146,92],  light:[247,230,198], contrast:.55, pores:0},
+    oak:    {base:[214,185,138], dark:[140,104,62],  light:[234,212,172], contrast:.8,  pores:1},
+    cherry: {base:[182,108,70],  dark:[124,64,38],   light:[208,140,100], contrast:.7,  pores:0},
+    walnut: {base:[104,72,50],   dark:[52,34,22],    light:[146,106,76],  contrast:.9,  pores:1},
+    painted:{paint:"#EFEDE7"},
+    parts:  {}
+  };
+  var reduceMotion = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  var $ = function(s){ return document.querySelector(s); };
+  var uid = function(){ return Math.random().toString(36).slice(2, 9); };
+  var clamp = function(v, a, b){ return Math.max(a, Math.min(b, v)); };
+
+  function fresh(){
+    var id = uid();
+    return {job:"", rules:Object.assign({}, DEFAULT_RULES),
+      doors:[{id:id, name:"Example: Sink base", qty:2, w:15.5, h:30.25}],
+      sel:id, showOpening:true, showHidden:true, finish:"maple", view:"3d"};
+  }
+  function load(){
+    try{
+      var raw = localStorage.getItem(KEY); if(!raw) return null;
+      var s = JSON.parse(raw);
+      if(!s || !Array.isArray(s.doors) || !s.doors.length) return null;
+      s.rules = Object.assign({}, DEFAULT_RULES, s.rules || {});
+      if(!s.doors.some(function(d){ return d.id === s.sel; })) s.sel = s.doors[0].id;
+      if(s.showOpening === undefined) s.showOpening = true;
+      if(s.showHidden === undefined) s.showHidden = true;
+      if(!FINISHES[s.finish]) s.finish = "maple";
+      if(s.view !== "drawing") s.view = "3d";
+      return s;
+    }catch(e){ return null; }
+  }
+  var state = load() || fresh();
+  var saveT;
+  function save(){ clearTimeout(saveT); saveT = setTimeout(function(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }, 150); }
+
+  /* ---------- math ---------- */
+  var r16 = function(x){ return Math.round(x * 16) / 16; };
+  function calc(d, r){
+    var W = r16(d.w + 2 * r.overlay), H = r16(d.h + 2 * r.overlay);
+    var railL = r16(W - r.railDeduct);
+    var pW = r16(railL - r.panelWDeduct), pH = r16(H - r.panelHDeduct);
+    var ok = W > 2 * r.stock && H > 2 * r.stock && railL > 0 && pW > 0 && pH > 0 && railL >= W - 2 * r.stock;
+    var q = Math.max(1, d.qty | 0);
+    return {W:W, H:H, stileL:H, railL:railL, pW:pW, pH:pH, ok:ok, q:q, stiles:2 * q, rails:2 * q, panels:q};
+  }
+  function parseSize(v){
+    var s = String(v == null ? "" : v).trim().replace(/["″”]/g, "").replace(/\s+/g, " ");
+    if(!s) return NaN;
+    var m = s.match(/^(\d*\.?\d+)$/); if(m) return parseFloat(m[1]);
+    m = s.match(/^(\d+)(?: |-| - )(\d+)\/(\d+)$/); if(m && +m[3]) return +m[1] + (+m[2]) / (+m[3]);
+    m = s.match(/^(\d+)\/(\d+)$/); if(m && +m[2]) return (+m[1]) / (+m[2]);
+    return NaN;
+  }
+  function parts(x){
+    var n = Math.round(x * 16), sign = n < 0 ? "-" : "", a = Math.abs(n);
+    var w = Math.floor(a / 16), num = a % 16, den = 16;
+    while(num && num % 2 === 0){ num /= 2; den /= 2; }
+    return {sign:sign, w:w, num:num, den:den};
+  }
+  function fmt(x){
+    var p = parts(x);
+    if(!p.num) return p.sign + p.w;
+    return p.sign + (p.w ? p.w + " " : "") + p.num + "/" + p.den;
+  }
+  function fmtH(x){
+    var p = parts(x), out = p.sign;
+    if(p.w || !p.num) out += p.w;
+    if(p.num) out += (p.w ? '<span class="sp"></span>' : "") + '<span class="fr"><sup>' + p.num + '</sup>&frasl;<sub>' + p.den + "</sub></span>";
+    return out;
+  }
+  function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+  function cur(){ for(var i = 0; i < state.doors.length; i++) if(state.doors[i].id === state.sel) return state.doors[i]; return state.doors[0]; }
+
+  /* ---------- wood textures (drawn once per species, tile seamlessly) ---------- */
+  var canCache = {}, urlCache = {};
+  function rng(seed){ return function(){ seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function woodCanvas(key){
+    if(canCache[key] !== undefined) return canCache[key];
+    var f = FINISHES[key], cv = null;
+    try{
+      var W = 256, H = 1024; cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+      var g = cv.getContext("2d"), rnd = rng(key.charCodeAt(0) * 131 + key.length * 17);
+      var rgba = function(c, a){ return "rgba(" + c[0] + "," + c[1] + "," + c[2] + "," + a + ")"; };
+      g.fillStyle = rgba(f.base, 1); g.fillRect(0, 0, W, H);
+      var i, k;
+      for(i = 0; i < 16; i++){
+        var bx = rnd() * W, bw = 12 + rnd() * 70, bc = rnd() < .55 ? f.dark : f.light, ba = (.05 + rnd() * .12) * (f.contrast + .3);
+        for(k = -1; k <= 1; k++){
+          var cx = bx + k * W, gr = g.createLinearGradient(cx - bw / 2, 0, cx + bw / 2, 0);
+          gr.addColorStop(0, rgba(bc, 0)); gr.addColorStop(.5, rgba(bc, ba)); gr.addColorStop(1, rgba(bc, 0));
+          g.fillStyle = gr; g.fillRect(cx - bw / 2, 0, bw, H);
+        }
+      }
+      for(i = 0; i < 190; i++){
+        var x0 = rnd() * W, amp = .6 + rnd() * 3.4, k1 = 1 + Math.floor(rnd() * 3), k2 = 3 + Math.floor(rnd() * 6);
+        var p1 = rnd() * 6.283, p2 = rnd() * 6.283, dk = rnd() < .8;
+        g.strokeStyle = rgba(dk ? f.dark : f.light, (.05 + rnd() * .22) * f.contrast);
+        g.lineWidth = .35 + rnd() * 1.4;
+        for(k = -1; k <= 1; k++){
+          var xb = x0 + k * W; if(xb < -12 || xb > W + 12) continue;
+          g.beginPath();
+          for(var y = 0; y <= H; y += 8){
+            var x = xb + Math.sin(y / H * 6.2832 * k1 + p1) * amp + Math.sin(y / H * 6.2832 * k2 + p2) * amp * .35;
+            if(y === 0) g.moveTo(x, y); else g.lineTo(x, y);
+          }
+          g.stroke();
+        }
+      }
+      if(f.pores){
+        for(i = 0; i < 900; i++){
+          var px = rnd() * W, py = rnd() * H;
+          g.fillStyle = rgba(f.dark, .1 + rnd() * .2); g.fillRect(px, py, .9, 2 + rnd() * 7);
+        }
+      }
+      var img = g.getImageData(0, 0, W, H), dd = img.data, r2 = rng(99);
+      for(i = 0; i < dd.length; i += 4){ var n = (r2() - .5) * 14; dd[i] += n; dd[i + 1] += n; dd[i + 2] += n; }
+      g.putImageData(img, 0, 0);
+    }catch(e){ cv = null; }
+    canCache[key] = cv;
+    return cv;
+  }
+  function woodURL(key){
+    if(urlCache[key] !== undefined) return urlCache[key];
+    var cv = woodCanvas(key), url = null;
+    try{ if(cv) url = cv.toDataURL("image/jpeg", .86); }catch(e){ url = null; }
+    urlCache[key] = url;
+    return url;
+  }
+  function rotatedCanvas(cv){
+    var o = document.createElement("canvas"); o.width = cv.height; o.height = cv.width;
+    var g = o.getContext("2d"); g.translate(o.width, 0); g.rotate(Math.PI / 2); g.drawImage(cv, 0, 0);
+    return o;
+  }
+  var loadedTex = "";
+  function ensureTexture(){
+    var key = state.finish;
+    if(!FINISHES[key].base) return false;
+    var url = woodURL(key);
+    if(!url) return false;
+    if(loadedTex !== key){ $("#woodimg").setAttribute("href", url); $("#woodimg2").setAttribute("href", url); loadedTex = key; }
+    return true;
+  }
+
+  /* ---------- shop drawing ---------- */
+  var svgHost = $("#svg-host"), svg = $("#svg"), dyn = $("#dyn");
+  var GRAIN = [[.22,.05],[.41,-.07],[.63,.06],[.81,-.04]];
+  function f1(v){ return (+v).toFixed(1); }
+  function rect(cls, x, y, w, h, extra){ return '<rect class="' + cls + '" x="' + f1(x) + '" y="' + f1(y) + '" width="' + f1(Math.max(0, w)) + '" height="' + f1(Math.max(0, h)) + '"' + (extra || "") + "/>"; }
+  function pill(cls, x, y, rot, text){
+    return '<g class="pill ' + cls + '" transform="translate(' + f1(x) + " " + f1(y) + ")" + (rot ? " rotate(" + rot + ")" : "") + '"><rect rx="9"/><text text-anchor="middle" dominant-baseline="central">' + text + "</text></g>";
+  }
+  function sizePills(root){
+    root.querySelectorAll("g.pill").forEach(function(gp){
+      var t = gp.querySelector("text"), r = gp.querySelector("rect"), b;
+      try{ b = t.getBBox(); }catch(e){ return; }
+      var px = 7, py = 3;
+      r.setAttribute("x", f1(b.x - px)); r.setAttribute("y", f1(b.y - py));
+      r.setAttribute("width", f1(b.width + 2 * px)); r.setAttribute("height", f1(b.height + 2 * py));
+      r.setAttribute("rx", f1((b.height + 2 * py) / 2));
+    });
+  }
+  function draw(){
+    var d = cur(), r = state.rules, c = calc(d, r);
+    var cw = svgHost.clientWidth, ch = svgHost.clientHeight;
+    if(!cw || !ch) return;
+    var narrow = cw < 520;
+    var pad = {l: narrow ? 50 : 78, r: narrow ? 50 : 78, t: narrow ? 50 : 60, b: narrow ? 56 : 68};
+    var W = Math.max(c.W, 1), H = Math.max(c.H, 1);
+    var s = Math.max(0.5, Math.min((cw - pad.l - pad.r) / W, (ch - pad.t - pad.b) / H));
+    var dw = W * s, dh = H * s;
+    var ox = pad.l + ((cw - pad.l - pad.r) - dw) / 2, oy = pad.t + ((ch - pad.t - pad.b) - dh) / 2;
+    var X = function(x){ return ox + x * s; }, Y = function(y){ return oy + y * s; };
+    var o = [], defs = [];
+    svg.setAttribute("viewBox", "0 0 " + cw + " " + ch);
+
+    var g = s >= 7 ? 1 : (s >= 2.2 ? 3 : 6), gs = g * s;
+    var minor = "", major = "", k, x, y;
+    var x0 = ox - Math.ceil(ox / gs) * gs, y0 = oy - Math.ceil(oy / gs) * gs;
+    for(x = x0, k = Math.round((x0 - ox) / gs); x <= cw; x += gs, k++){ if((k * g) % 12 === 0) major += "M" + f1(x) + " 0V" + ch; else minor += "M" + f1(x) + " 0V" + ch; }
+    for(y = y0, k = Math.round((y0 - oy) / gs); y <= ch; y += gs, k++){ if((k * g) % 12 === 0) major += "M0 " + f1(y) + "H" + cw; else minor += "M0 " + f1(y) + "H" + cw; }
+    o.push('<path class="g-minor" d="' + minor + '"/><path class="g-major" d="' + major + '"/>');
+    $("#grid-note").textContent = "Grid = " + g + "″, heavy line every 12″";
+
+    o.push(rect("", X(0) + 2, Y(0) + 8, dw, dh, ' fill="#0B1220" fill-opacity=".22" filter="url(#soft)"'));
+
+    if(!c.ok){
+      o.push(rect("outline", X(0), Y(0), dw, dh, ' style="fill:var(--surface)"'));
+      o.push('<text class="t-warn" x="' + (cw / 2) + '" y="' + (ch / 2) + '" text-anchor="middle">Too small for ' + fmt(r.stock) + '″ stiles and rails</text>');
+      dyn.innerHTML = o.join("");
+      return;
+    }
+    var st = r.stock, fin = state.finish;
+    var wood = ensureTexture(), painted = fin === "painted", partsMode = fin === "parts" || (!wood && !painted);
+    var fillSt0, fillSt1, fillRa0, fillRa1, fillPa, cls;
+    if(wood){
+      var pat = function(id, px, py, rot, inches){
+        var tw = inches * s, th = tw * 4;
+        defs.push('<pattern id="' + id + '" patternUnits="userSpaceOnUse" width="' + tw.toFixed(2) + '" height="' + th.toFixed(2) + '" patternTransform="translate(' + px.toFixed(2) + " " + py.toFixed(2) + ") rotate(" + rot + ')"><use href="#woodimg" transform="scale(' + (tw / 256).toFixed(5) + ')"/></pattern>');
+        return ' fill="url(#' + id + ')"';
+      };
+      fillSt0 = pat("w-s0", X(0) - 0.8 * s, Y(0) - 3 * s, 0, 6);
+      fillSt1 = pat("w-s1", X(W - st) - 2.9 * s, Y(0) - 13 * s, 0, 6);
+      fillRa0 = pat("w-r0", X(st) - 4 * s, Y(0) + 0.6 * s, -90, 6);
+      fillRa1 = pat("w-r1", X(st) - 15 * s, Y(H - st) + 3.4 * s, -90, 6);
+      fillPa = pat("w-p", X(st) - 3 * s, Y(st) - 9 * s, 0, 10);
+      cls = {st:"joint", ra:"joint", pa:"joint"};
+    }else if(painted){
+      fillSt0 = fillSt1 = fillRa0 = fillRa1 = fillPa = ' fill="' + FINISHES.painted.paint + '"';
+      cls = {st:"joint", ra:"joint", pa:"joint"};
+    }else{
+      fillSt0 = fillSt1 = fillRa0 = fillRa1 = fillPa = "";
+      cls = {st:"p-st", ra:"p-ra", pa:"p-pa"};
+    }
+    if(defs.length) o.push("<defs>" + defs.join("") + "</defs>");
+
+    o.push(rect(cls.pa, X(st), Y(st), (W - 2 * st) * s, (H - 2 * st) * s, fillPa));
+    var sh = Math.min(16, Math.max(5, 0.42 * s));
+    o.push(rect("", X(st), Y(st), (W - 2 * st) * s, sh, ' fill="url(#sh-down)"'));
+    o.push(rect("", X(st), Y(st), sh * .8, (H - 2 * st) * s, ' fill="url(#sh-right)"'));
+    o.push('<path d="M' + f1(X(st)) + " " + f1(Y(H - st) - .5) + "H" + f1(X(W - st) - .5) + "V" + f1(Y(st)) + '" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="1"/>');
+    [[0, fillRa0], [H - st, fillRa1]].forEach(function(rp){
+      var ry = rp[0];
+      o.push(rect(cls.ra, X(st), Y(ry), (W - 2 * st) * s, st * s, rp[1]));
+      if(partsMode){
+        var gp = "";
+        GRAIN.slice(0, 3).forEach(function(gr){
+          var yy = ry + st * (0.25 + gr[0] * 0.6), bow = gr[1] * st;
+          gp += "M" + f1(X(st + 0.15)) + " " + f1(Y(yy)) + "Q" + f1(X(W / 2)) + " " + f1(Y(yy + bow)) + " " + f1(X(W - st - 0.15)) + " " + f1(Y(yy));
+        });
+        o.push('<path class="grain-ra" d="' + gp + '"/>');
+      }
+    });
+    [[0, fillSt0], [W - st, fillSt1]].forEach(function(sp){
+      var sx = sp[0];
+      o.push(rect(cls.st, X(sx), Y(0), st * s, dh, sp[1]));
+      if(partsMode){
+        var gp = "";
+        GRAIN.forEach(function(gr){
+          var xx = sx + st * gr[0], bow = gr[1] * st;
+          gp += "M" + f1(X(xx)) + " " + f1(Y(0.15)) + "Q" + f1(X(xx + bow)) + " " + f1(Y(H / 2)) + " " + f1(X(xx)) + " " + f1(Y(H - 0.15));
+        });
+        o.push('<path class="grain-st" d="' + gp + '"/>');
+      }
+    });
+    if(!partsMode){
+      o.push(rect("", X(0), Y(0), dw, dh, ' fill="url(#sheen)"'));
+      o.push('<path d="M' + f1(X(0) + .7) + " " + f1(Y(H) - 1) + "V" + f1(Y(0) + .7) + "H" + f1(X(W) - 1) + '" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"/>');
+      o.push(rect("outline-real", X(0), Y(0), dw, dh));
+    }else{
+      o.push(rect("outline", X(0), Y(0), dw, dh));
+    }
+
+    if(state.showHidden){
+      var ten = (c.railL - (W - 2 * st)) / 2, hid = [];
+      [0, H - st].forEach(function(ry){
+        hid.push(["hid-ra", X(st - ten), Y(ry), ten * s, st * s]);
+        hid.push(["hid-ra", X(W - st), Y(ry), ten * s, st * s]);
+      });
+      hid.push(["hid-pa", X((W - c.pW) / 2), Y((H - c.pH) / 2), c.pW * s, c.pH * s]);
+      hid.forEach(function(h){ o.push(rect("hid-under", h[1], h[2], h[3], h[4])); });
+      hid.forEach(function(h){ o.push(rect(h[0], h[1], h[2], h[3], h[4])); });
+    }
+    var ov = r.overlay;
+    if(state.showOpening){
+      o.push(rect("op-under", X(ov), Y(ov), d.w * s, d.h * s));
+      o.push(rect("opening", X(ov), Y(ov), d.w * s, d.h * s));
+    }
+
+    function tick(cx, cy, c2){ return '<path class="' + c2 + '" d="M' + f1(cx - 4) + " " + f1(cy + 4) + "L" + f1(cx + 4) + " " + f1(cy - 4) + '"/>'; }
+    var top = Y(0) - (narrow ? 26 : 32), left = X(0) - (narrow ? 26 : 36);
+    o.push('<path class="ext" d="M' + f1(X(0)) + " " + f1(Y(0) - 4) + "V" + f1(top - 6) + "M" + f1(X(W)) + " " + f1(Y(0) - 4) + "V" + f1(top - 6) + '"/>');
+    o.push('<path class="dim" d="M' + f1(X(0)) + " " + f1(top) + "H" + f1(X(W)) + '"/>' + tick(X(0), top, "dim") + tick(X(W), top, "dim"));
+    o.push('<path class="ext" d="M' + f1(X(0) - 4) + " " + f1(Y(0)) + "H" + f1(left - 6) + "M" + f1(X(0) - 4) + " " + f1(Y(H)) + "H" + f1(left - 6) + '"/>');
+    o.push('<path class="dim" d="M' + f1(left) + " " + f1(Y(0)) + "V" + f1(Y(H)) + '"/>' + tick(left, Y(0), "dim") + tick(left, Y(H), "dim"));
+    var labels = [];
+    labels.push(pill("pl-door", X(W / 2), top, 0, "DOOR " + fmt(c.W) + "″"));
+    labels.push(pill("pl-door", left, Y(H / 2), -90, "DOOR " + fmt(c.H) + "″"));
+    if(state.showOpening){
+      var bot = Y(H) + (narrow ? 28 : 34), right = X(W) + (narrow ? 26 : 36);
+      o.push('<path class="ext-op" d="M' + f1(X(ov)) + " " + f1(Y(H) + 3) + "V" + f1(bot + 6) + "M" + f1(X(W - ov)) + " " + f1(Y(H) + 3) + "V" + f1(bot + 6) + '"/>');
+      o.push('<path class="dim-op" d="M' + f1(X(ov)) + " " + f1(bot) + "H" + f1(X(W - ov)) + '"/>' + tick(X(ov), bot, "dim-op") + tick(X(W - ov), bot, "dim-op"));
+      o.push('<path class="ext-op" d="M' + f1(X(W) + 3) + " " + f1(Y(ov)) + "H" + f1(right + 6) + "M" + f1(X(W) + 3) + " " + f1(Y(H - ov)) + "H" + f1(right + 6) + '"/>');
+      o.push('<path class="dim-op" d="M' + f1(right) + " " + f1(Y(ov)) + "V" + f1(Y(H - ov)) + '"/>' + tick(right, Y(ov), "dim-op") + tick(right, Y(H - ov), "dim-op"));
+      labels.push(pill("pl-op", X(W / 2), bot, 0, "OPENING " + fmt(d.w) + "″"));
+      labels.push(pill("pl-op", right, Y(H / 2), -90, "OPENING " + fmt(d.h) + "″"));
+    }
+    var stPx = st * s;
+    if(stPx >= 17 && dh >= 170){
+      [0, W - st].forEach(function(sx){ labels.push(pill("pl-st", X(sx + st / 2), Y(H / 2), -90, "STILE " + fmt(c.stileL) + "″")); });
+    }
+    if(stPx >= 17 && (W - 2 * st) * s >= 100){
+      [0, H - st].forEach(function(ry){ labels.push(pill("pl-ra", X(W / 2), Y(ry + st / 2), 0, "RAIL " + fmt(c.railL) + "″")); });
+    }
+    if((W - 2 * st) * s >= 120 && (H - 2 * st) * s >= 70){
+      labels.push(pill("pl-pa", X(W / 2), Y(H / 2) - 14, 0, "PANEL"));
+      labels.push(pill("pl-pa pl-big", X(W / 2), Y(H / 2) + 13, 0, fmt(c.pW) + " × " + fmt(c.pH) + "″"));
+    }
+    dyn.innerHTML = o.join("") + labels.join("");
+    sizePills(dyn);
+  }
+
+  /* ---------- 3D view ---------- */
+  var glHost = $("#gl-host"), G = {ready:false, failed:false, mats:{}, open:0.55, yaw:0.5, pitch:0.2, size:{w:20, h:36, d:13}, cw:0, ch:0};
+  var DEF = {yaw:0.5, pitch:0.2};
+  function lin(hex){ return new THREE.Color(hex).convertSRGBToLinear(); }
+  function init3D(){
+    if(G.ready) return true;
+    if(G.failed) return false;
+    if(typeof THREE === "undefined"){ G.failed = true; return false; }
+    var renderer;
+    try{ renderer = new THREE.WebGLRenderer({antialias:true, alpha:true}); }catch(e){ G.failed = true; return false; }
+    if(!renderer || !renderer.getContext()){ G.failed = true; return false; }
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    var el = renderer.domElement;
+    el.setAttribute("role", "img");
+    el.setAttribute("aria-label", "3D view of the door mounted on a cabinet");
+    el.style.touchAction = "pan-y";
+    glHost.insertBefore(el, glHost.firstChild);
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(28, 1, 1, 3000);
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x8d949c, 0.42));
+    var key = new THREE.DirectionalLight(0xfffaf2, 1.05);
+    key.position.set(-30, 95, 75); key.castShadow = true;
+    key.shadow.mapSize.set(2048, 2048); key.shadow.bias = -0.0006; key.shadow.normalBias = 0.03;
+    scene.add(key); scene.add(key.target);
+    var fill = new THREE.DirectionalLight(0xe8f0ff, 0.28); fill.position.set(70, 20, 30); scene.add(fill);
+    var floor = new THREE.Mesh(new THREE.PlaneGeometry(800, 800), new THREE.ShadowMaterial({opacity:0.22}));
+    floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
+    var root = new THREE.Group(); scene.add(root);
+    G.renderer = renderer; G.scene = scene; G.camera = camera; G.key = key; G.floor = floor; G.root = root; G.ready = true;
+    var drag = null;
+    el.addEventListener("pointerdown", function(e){
+      drag = {x:e.clientX, y:e.clientY, yaw:G.yaw, pitch:G.pitch, touch:e.pointerType === "touch"};
+      try{ el.setPointerCapture(e.pointerId); }catch(_){}
+      glHost.classList.add("dragging");
+    });
+    el.addEventListener("pointermove", function(e){
+      if(!drag) return;
+      G.yaw = clamp(drag.yaw - (e.clientX - drag.x) * 0.008, -1.25, 1.25);
+      if(!drag.touch) G.pitch = clamp(drag.pitch + (e.clientY - drag.y) * 0.006, -0.05, 0.75);
+      place3D(); render3D();
+    });
+    ["pointerup", "pointercancel", "lostpointercapture"].forEach(function(ev){ el.addEventListener(ev, function(){ drag = null; glHost.classList.remove("dragging"); }); });
+    return true;
+  }
+  function mats3D(){
+    var key = state.finish;
+    if(G.mats[key]) return G.mats[key];
+    var std = function(hex, rough, metal){ return new THREE.MeshStandardMaterial({color:lin(hex), roughness:rough, metalness:metal || 0}); };
+    var m = {carcass:std(0xB9C0C8, .78), inside:std(0xA3AAB3, .9), knob:std(0x232323, .42, .35), hinge:std(0xA4A9AE, .38, .7)};
+    var cv = FINISHES[key].base ? woodCanvas(key) : null;
+    if(cv){
+      var cvH = rotatedCanvas(cv), aniso = Math.min(8, G.renderer.capabilities.getMaxAnisotropy());
+      var tex = function(src, ox, oy){ var t = new THREE.CanvasTexture(src); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.encoding = THREE.sRGBEncoding; t.anisotropy = aniso; t.offset.set(ox, oy); return t; };
+      var wm = function(t){ return new THREE.MeshStandardMaterial({map:t, roughness:.6, metalness:0}); };
+      m.st0 = wm(tex(cv, .13, .05)); m.st1 = wm(tex(cv, .61, .42));
+      m.ra0 = wm(tex(cvH, .21, .3)); m.ra1 = wm(tex(cvH, .66, .74));
+      m.pa = wm(tex(cv, .35, .2));
+    }else if(key === "painted"){
+      var p = std(0xF2F0EB, .55); m.st0 = m.st1 = m.ra0 = m.ra1 = m.pa = p;
+    }else{
+      m.st0 = m.st1 = std(0x9CC3E8, .6); m.ra0 = m.ra1 = std(0xB3D49A, .6); m.pa = std(0xC8B6E6, .6);
+    }
+    G.mats[key] = m;
+    return m;
+  }
+  function box(w, h, dp, mat, x, y, z, parent, rep){
+    var mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, dp), mat);
+    mesh.position.set(x, y, z); mesh.castShadow = true; mesh.receiveShadow = true;
+    if(rep && mat.map) mat.map.repeat.set(rep[0], rep[1]);
+    parent.add(mesh);
+    return mesh;
+  }
+  function build3D(){
+    var d = cur(), r = state.rules, c = calc(d, r);
+    G.root.traverse(function(o){ if(o.geometry) o.geometry.dispose(); });
+    G.root.clear();
+    G.hinge = null;
+    var ow = d.w, oh = d.h, ff = 1.5, T = 0.75, depth = 12;
+    var cabW = ow + 2 * ff, cabH = oh + 2 * ff;
+    G.size = {w:cabW, h:cabH, d:depth + T};
+    var m = mats3D();
+    var shp = new THREE.Shape();
+    shp.moveTo(-cabW / 2, -cabH / 2); shp.lineTo(cabW / 2, -cabH / 2); shp.lineTo(cabW / 2, cabH / 2); shp.lineTo(-cabW / 2, cabH / 2); shp.lineTo(-cabW / 2, -cabH / 2);
+    var hole = new THREE.Path();
+    hole.moveTo(-ow / 2, -oh / 2); hole.lineTo(-ow / 2, oh / 2); hole.lineTo(ow / 2, oh / 2); hole.lineTo(ow / 2, -oh / 2); hole.lineTo(-ow / 2, -oh / 2);
+    shp.holes.push(hole);
+    var ffm = new THREE.Mesh(new THREE.ExtrudeGeometry(shp, {depth:T, bevelEnabled:false}), m.carcass);
+    ffm.position.z = -T; ffm.castShadow = true; ffm.receiveShadow = true; G.root.add(ffm);
+    var zc = -T - depth / 2, iw = cabW - 2 * T;
+    box(T, cabH, depth, m.carcass, -cabW / 2 + T / 2, 0, zc, G.root);
+    box(T, cabH, depth, m.carcass, cabW / 2 - T / 2, 0, zc, G.root);
+    box(iw, T, depth, m.inside, 0, cabH / 2 - T / 2, zc, G.root);
+    box(iw, T, depth, m.inside, 0, -cabH / 2 + T / 2, zc, G.root);
+    box(iw, cabH - 2 * T, T / 2, m.inside, 0, 0, -T - depth + T / 4, G.root);
+    if(oh > 16) box(iw, T, depth - 1.5, m.carcass, 0, 0, zc + 0.5, G.root);
+    if(c.ok){
+      var W = c.W, H = c.H, st = r.stock, rl = W - 2 * st;
+      var hinge = new THREE.Group(); hinge.position.set(-W / 2, 0, 0.06); G.root.add(hinge);
+      var door = new THREE.Group(); door.position.set(W / 2, 0, T / 2); hinge.add(door);
+      box(st, H, T, m.st0, -W / 2 + st / 2, 0, 0, door, [st / 6, H / 24]);
+      box(st, H, T, m.st1, W / 2 - st / 2, 0, 0, door, [st / 6, H / 24]);
+      box(rl, st, T, m.ra0, 0, H / 2 - st / 2, 0, door, [rl / 24, st / 6]);
+      box(rl, st, T, m.ra1, 0, -H / 2 + st / 2, 0, door, [rl / 24, st / 6]);
+      box(c.pW, c.pH, 0.25, m.pa, 0, 0, T / 2 - 0.375, door, [c.pW / 10, c.pH / 40]);
+      var ky = H / 2 - Math.min(3.5, H * 0.18), kx = W / 2 - st / 2;
+      var knob = new THREE.Mesh(new THREE.SphereGeometry(0.6, 28, 18), m.knob);
+      knob.scale.set(1, 1, 0.75); knob.position.set(kx, ky, T / 2 + 0.95); knob.castShadow = true; door.add(knob);
+      var stem = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.26, 0.8, 18), m.knob);
+      stem.rotation.x = Math.PI / 2; stem.position.set(kx, ky, T / 2 + 0.4); stem.castShadow = true; door.add(stem);
+      [H / 2 - 3, -H / 2 + 3].forEach(function(hy){
+        var hg = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 2.4, 16), m.hinge);
+        hg.position.set(0.05, hy, -0.05); hg.castShadow = true; hinge.add(hg);
+      });
+      hinge.rotation.y = -G.open;
+      G.hinge = hinge;
+    }
+    G.floor.position.y = -cabH / 2 - 0.02;
+    G.doorW = c.ok ? c.W : ow;
+    var S =Math.max(cabW, cabH) * 0.85 + 12, sc = G.key.shadow.camera;
+    sc.left = -S; sc.right = S; sc.top = S; sc.bottom = -S; sc.near = 1; sc.far = 400; sc.updateProjectionMatrix();
+    syncSwing();
+  }
+  function place3D(){
+    if(!G.ready) return;
+    var cw = glHost.clientWidth, ch = glHost.clientHeight;
+    if(!cw || !ch) return;
+    if(cw !== G.cw || ch !== G.ch){ G.renderer.setSize(cw, ch); G.cw = cw; G.ch = ch; }
+    var cam = G.camera; cam.aspect = cw / ch; cam.updateProjectionMatrix();
+    var t = Math.tan(cam.fov * Math.PI / 360), ay = Math.abs(G.yaw);
+    // size of the turned cabinet as the camera sees it, with room for a door swung open
+    var reach = (G.doorW || G.size.w) * 0.75;
+    var pw = G.size.w * Math.cos(ay) + (G.size.d + reach) * Math.sin(ay) + 4;
+    var ph = G.size.h * Math.cos(G.pitch) + G.size.d * Math.sin(Math.abs(G.pitch)) + 4;
+    var R = Math.max(ph / 2 / t, pw / 2 / (t * cam.aspect)) * 1.3 + G.size.d * 0.5;
+    var tz = -G.size.d * 0.45 + reach * 0.25, ty = -G.size.h * 0.02;
+    cam.position.set(R * Math.sin(G.yaw) * Math.cos(G.pitch), ty + R * Math.sin(G.pitch), tz + R * Math.cos(G.yaw) * Math.cos(G.pitch));
+    cam.lookAt(0, ty, tz);
+  }
+  function render3D(){ if(G.ready) G.renderer.render(G.scene, G.camera); }
+  var q3 = 0;
+  function update3D(){
+    if(state.view !== "3d" || q3) return;
+    q3 = requestAnimationFrame(function(){ q3 = 0; if(state.view !== "3d" || !init3D()) return; build3D(); place3D(); render3D(); });
+  }
+  function syncSwing(){ $("#swing").textContent = G.open < 1 ? "Open door" : "Close door"; }
+  function animateOpen(to){
+    if(!G.ready) return;
+    cancelAnimationFrame(G.anim);
+    var from = G.open, t0 = performance.now(), dur = reduceMotion ? 1 : 1100;
+    (function step(now){
+      var p = Math.min(1, (now - t0) / dur), e = p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+      G.open = from + (to - from) * e;
+      if(G.hinge) G.hinge.rotation.y = -G.open;
+      render3D();
+      if(p < 1) G.anim = requestAnimationFrame(step); else syncSwing();
+    })(t0);
+  }
+  $("#swing").addEventListener("click", function(){ animateOpen(G.open < 1 ? 1.75 : 0); });
+  $("#reset-view").addEventListener("click", function(){ G.yaw = DEF.yaw; G.pitch = DEF.pitch; place3D(); render3D(); });
+
+  /* ---------- cutting diagram ---------- */
+  var diag = $("#diagram"), cdyn = $("#cd-dyn"), cutsvg = $("#cutsvg");
+  function renderDiagram(){
+    var d = cur(), r = state.rules, c = calc(d, r);
+    if(!c.ok){ diag.hidden = true; return; }
+    diag.hidden = false;
+    var cw = diag.clientWidth; if(!cw) return;
+    var maxL = Math.max(c.stileL, c.railL, c.pH), k = (cw - 6) / maxL, st = r.stock, gap = 9, y = 2, x = 2;
+    var fin = state.finish, wood = ensureTexture(), painted = fin === "painted";
+    var rows = [
+      ["st", c.stileL, st, "STILE " + fmt(c.stileL) + "″"], ["st", c.stileL, st, "STILE " + fmt(c.stileL) + "″"],
+      ["ra", c.railL, st, "RAIL " + fmt(c.railL) + "″"], ["ra", c.railL, st, "RAIL " + fmt(c.railL) + "″"],
+      ["pa", c.pH, c.pW, "PANEL " + fmt(c.pW) + " × " + fmt(c.pH) + "″"]
+    ];
+    var o = [], defs = [], labels = [];
+    rows.forEach(function(row, i){
+      var w = row[1] * k, h = row[2] * k, fill = "", cls;
+      if(wood){
+        var tw = (row[0] === "pa" ? 10 : 6) * k, id = "cd" + i;
+        defs.push('<pattern id="' + id + '" patternUnits="userSpaceOnUse" width="' + tw.toFixed(2) + '" height="' + (tw * 4).toFixed(2) + '" patternTransform="translate(' + (x - (i * 7 % 20) * k).toFixed(2) + " " + (y + (i * 1.7 % 5) * k).toFixed(2) + ') rotate(-90)"><use href="#woodimg2" transform="scale(' + (tw / 256).toFixed(5) + ')"/></pattern>');
+        fill = ' fill="url(#' + id + ')"'; cls = "joint";
+      }else if(painted){
+        fill = ' fill="' + FINISHES.painted.paint + '"'; cls = "joint";
+      }else cls = "p-" + row[0];
+      o.push(rect("", x + 1, y + 3, w, h, ' fill="#0B1220" fill-opacity=".2" filter="url(#soft2)"'));
+      o.push(rect(cls, x, y, w, h, fill));
+      if(wood || painted) o.push(rect("", x, y, w, h, ' fill="url(#sheen2)"'));
+      labels.push(pill("pl-" + row[0], x + w / 2, y + h / 2, 0, row[3]));
+      y += h + gap;
+    });
+    var Ht = Math.ceil(y - gap + 6);
+    cutsvg.setAttribute("viewBox", "0 0 " + cw + " " + Ht);
+    cutsvg.style.height = Ht + "px";
+    cdyn.innerHTML = (defs.length ? "<defs>" + defs.join("") + "</defs>" : "") + o.join("") + labels.join("");
+    sizePills(cdyn);
+  }
+
+  /* ---------- panels ---------- */
+  var ICON = {
+    st:'<svg class="ico" viewBox="0 0 26 26" aria-hidden="true"><rect class="i-st" x="9.5" y="1.5" width="7" height="23" rx="1.2"/></svg>',
+    ra:'<svg class="ico" viewBox="0 0 26 26" aria-hidden="true"><rect class="i-ra" x="1.5" y="9.5" width="23" height="7" rx="1.2"/></svg>',
+    pa:'<svg class="ico" viewBox="0 0 26 26" aria-hidden="true"><rect class="i-pa" x="4.5" y="2.5" width="17" height="21" rx="1.2"/></svg>'
+  };
+  function thumb(c, r){
+    var bw = 24, bh = 30, sc = Math.min(bw / c.W, bh / c.H), w = c.W * sc, h = c.H * sc, x = (26 - w) / 2, y = (32 - h) / 2, t = Math.max(2, r.stock * sc);
+    return '<svg class="thumb" viewBox="0 0 26 32" aria-hidden="true"><rect class="m-pa" x="' + f1(x + t) + '" y="' + f1(y + t) + '" width="' + f1(Math.max(0, w - 2 * t)) + '" height="' + f1(Math.max(0, h - 2 * t)) + '"/>' +
+      '<rect class="m-ra" x="' + f1(x + t) + '" y="' + f1(y) + '" width="' + f1(Math.max(0, w - 2 * t)) + '" height="' + f1(t) + '"/><rect class="m-ra" x="' + f1(x + t) + '" y="' + f1(y + h - t) + '" width="' + f1(Math.max(0, w - 2 * t)) + '" height="' + f1(t) + '"/>' +
+      '<rect class="m-st" x="' + f1(x) + '" y="' + f1(y) + '" width="' + f1(t) + '" height="' + f1(h) + '"/><rect class="m-st" x="' + f1(x + w - t) + '" y="' + f1(y) + '" width="' + f1(t) + '" height="' + f1(h) + '"/></svg>';
+  }
+  function renderEditorDerived(){
+    var d = cur(), c = calc(d, state.rules);
+    $("#door-size").innerHTML = fmtH(c.W) + " × " + fmtH(c.H) + "″";
+    $("#door-note").innerHTML = "opening + " + fmtH(state.rules.overlay) + "″ overlay each side";
+    $("#stage-h").textContent = d.name ? d.name : "Front view";
+    $("#stage-size").innerHTML = c.ok ? fmtH(c.W) + " × " + fmtH(c.H) + "″" : "";
+  }
+  function renderCut(){
+    var d = cur(), c = calc(d, state.rules), r = state.rules;
+    $("#cut-for").textContent = c.q === 1 ? "1 door" : c.q + " doors";
+    if(!c.ok){
+      $("#cut").innerHTML = '<div class="warn" role="status">This opening is too small for ' + fmtH(r.stock) + '″ stiles and rails. Check the size.</div>';
+      return;
+    }
+    $("#cut").innerHTML =
+      '<table class="cut"><thead><tr><th>Part</th><th>Qty</th><th>Width</th><th>Length</th></tr></thead><tbody>' +
+      '<tr><td><span class="part">' + ICON.st + 'Stiles</span></td><td class="qty">' + c.stiles + '</td><td class="dimw">' + fmtH(r.stock) + '</td><td class="size">' + fmtH(c.stileL) + "</td></tr>" +
+      '<tr><td><span class="part">' + ICON.ra + 'Rails</span></td><td class="qty">' + c.rails + '</td><td class="dimw">' + fmtH(r.stock) + '</td><td class="size">' + fmtH(c.railL) + "</td></tr>" +
+      '<tr><td><span class="part">' + ICON.pa + 'Panel</span></td><td class="qty">' + c.panels + '</td><td class="size">' + fmtH(c.pW) + '</td><td class="size">' + fmtH(c.pH) + "</td></tr>" +
+      "</tbody></table>";
+  }
+  function renderJob(){
+    var r = state.rules, total = 0;
+    var html = state.doors.map(function(d){
+      var c = calc(d, r); total += c.q;
+      return '<li class="door' + (d.id === state.sel ? " on" : "") + '">' +
+        '<button type="button" class="door-pick" data-id="' + d.id + '" aria-current="' + (d.id === state.sel) + '">' + thumb(c, r) +
+        '<span class="nm">' + esc(d.name || "Untitled door") + '</span><span class="q">×' + c.q + "</span>" +
+        '<span class="sz">Opening ' + fmtH(d.w) + " × " + fmtH(d.h) + " · door " + fmtH(c.W) + " × " + fmtH(c.H) + (c.ok ? "" : " · check size") + "</span></button>" +
+        '<button type="button" class="door-del" data-del="' + d.id + '" aria-label="Remove ' + esc(d.name || "door") + '">×</button></li>';
+    }).join("");
+    $("#doors").innerHTML = html;
+    $("#job-count").textContent = total === 1 ? "1 door" : total + " doors";
+  }
+  function jobParts(){
+    var r = state.rules, st = {}, ra = {}, pa = {}, doors = 0, lin2 = 0, area = 0, bad = 0;
+    state.doors.forEach(function(d){
+      var c = calc(d, r);
+      if(!c.ok){ bad++; return; }
+      doors += c.q;
+      st[c.stileL] = (st[c.stileL] || 0) + c.stiles;
+      ra[c.railL] = (ra[c.railL] || 0) + c.rails;
+      var pk = c.pW + "x" + c.pH; pa[pk] = pa[pk] || {w:c.pW, h:c.pH, n:0}; pa[pk].n += c.panels;
+      lin2 += c.stiles * c.stileL + c.rails * c.railL;
+      area += c.panels * c.pW * c.pH;
+    });
+    var byLen = function(m){ return Object.keys(m).map(Number).sort(function(a, b){ return b - a; }).map(function(L){ return {L:L, n:m[L]}; }); };
+    var pl = Object.keys(pa).map(function(k){ return pa[k]; }).sort(function(a, b){ return b.h - a.h || b.w - a.w; });
+    return {st:byLen(st), ra:byLen(ra), pa:pl, doors:doors, lin:lin2 / 12, sqft:area / 144, bad:bad};
+  }
+  function renderGroups(){
+    var j = jobParts(), r = state.rules;
+    var li = function(n, inner){ return '<li><span class="n">' + n + ' ×</span><span class="l">' + inner + "</span></li>"; };
+    var html = "";
+    if(j.bad) html += '<div class="warn" role="status">' + j.bad + (j.bad === 1 ? " door is" : " doors are") + " too small and left out of the totals.</div>";
+    html += '<div class="grp"><h3>' + ICON.st + 'Stiles <small>' + fmtH(r.stock) + '″ wide</small></h3><ul>' + j.st.map(function(p){ return li(p.n, fmtH(p.L) + "″"); }).join("") + "</ul></div>";
+    html += '<div class="grp"><h3>' + ICON.ra + 'Rails <small>' + fmtH(r.stock) + '″ wide</small></h3><ul>' + j.ra.map(function(p){ return li(p.n, fmtH(p.L) + "″"); }).join("") + "</ul></div>";
+    html += '<div class="grp"><h3>' + ICON.pa + 'Panels <small>width × height</small></h3><ul>' + j.pa.map(function(p){ return li(p.n, fmtH(p.w) + " × " + fmtH(p.h) + "″"); }).join("") + "</ul></div>";
+    html += '<div class="totals"><div class="tot"><div class="v">' + j.doors + '</div><div class="k">doors</div></div>' +
+      '<div class="tot"><div class="v">' + j.lin.toFixed(1) + '</div><div class="k">lin. ft of ' + fmt(r.stock) + '″ stock</div></div>' +
+      '<div class="tot"><div class="v">' + j.sqft.toFixed(1) + '</div><div class="k">sq ft of panel</div></div></div>';
+    $("#groups").innerHTML = html;
+  }
+  function renderRulesLine(){
+    var r = state.rules;
+    $("#rules-line").innerHTML =
+      '<span class="chip"><b>' + fmtH(r.overlay) + '″</b> overlay</span>' +
+      '<span class="chip"><b>' + fmtH(r.stock) + '″</b> stiles &amp; rails</span>' +
+      '<span class="chip">rail = door − <b>' + fmtH(r.railDeduct) + '″</b></span>' +
+      '<span class="chip">panel = rail − <b>' + fmtH(r.panelWDeduct) + '″</b>, stile − <b>' + fmtH(r.panelHDeduct) + '″</b></span>';
+  }
+  function syncEditor(){
+    var d = cur();
+    setVal("#name", d.name); setVal("#qty", d.qty); setVal("#w", fmt(d.w)); setVal("#h", fmt(d.h));
+    $("#wr").value = d.w; $("#hr").value = d.h;
+    ["w", "h"].forEach(function(k){ $("#" + k).classList.remove("bad"); $("#" + k + "-err").textContent = ""; });
+  }
+  function syncRules(){
+    document.querySelectorAll("[data-r]").forEach(function(el){ if(document.activeElement !== el){ el.value = fmt(state.rules[el.dataset.r]); el.classList.remove("bad"); } });
+  }
+  function setVal(sel, v){ var el = $(sel); if(document.activeElement !== el) el.value = v; }
+  function renderVisuals(){ draw(); update3D(); renderDiagram(); }
+  function renderAll(){ renderEditorDerived(); renderVisuals(); renderCut(); renderJob(); renderGroups(); renderRulesLine(); save(); }
+
+  /* ---------- view switch ---------- */
+  function setView(v){
+    if(v === "3d" && !init3D()){
+      v = "drawing";
+      $("#v-3d").disabled = true; $("#v-3d").title = "The 3D view needs WebGL";
+    }
+    state.view = v;
+    var is3d = v === "3d";
+    glHost.hidden = !is3d; svgHost.hidden = is3d; $("#legend").hidden = is3d;
+    $("#v-3d").setAttribute("aria-pressed", String(is3d)); $("#v-dr").setAttribute("aria-pressed", String(!is3d));
+    if(is3d) update3D(); else draw();
+    save();
+  }
+  $("#v-3d").addEventListener("click", function(){ setView("3d"); });
+  $("#v-dr").addEventListener("click", function(){ setView("drawing"); });
+
+  /* ---------- editor events ---------- */
+  $("#name").addEventListener("input", function(e){ cur().name = e.target.value; renderEditorDerived(); renderJob(); save(); });
+  $("#qty").addEventListener("input", function(e){ var n = parseInt(e.target.value, 10); if(n >= 1){ cur().qty = n; renderAll(); } });
+  $("#qty").addEventListener("blur", function(e){ e.target.value = cur().qty; });
+  function setDim(k, v, fromText){
+    var d = cur();
+    d[k] = Math.max(1, r16(v));
+    if(!fromText) $("#" + k).value = fmt(d[k]);
+    $("#" + k + "r").value = d[k];
+    renderAll();
+  }
+  ["w", "h"].forEach(function(k){
+    var el = $("#" + k);
+    el.addEventListener("input", function(){
+      var v = parseSize(el.value);
+      var bad = !(v > 0);
+      el.classList.toggle("bad", bad && el.value.trim() !== "");
+      $("#" + k + "-err").textContent = bad && el.value.trim() !== "" ? "Use a size like 15 1/2, 15-1/2 or 15.5" : "";
+      if(!bad) setDim(k, v, true);
+    });
+    el.addEventListener("blur", function(){ el.value = fmt(cur()[k]); el.classList.remove("bad"); $("#" + k + "-err").textContent = ""; });
+    el.addEventListener("keydown", function(e){
+      if(e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+      e.preventDefault();
+      var stepIn = e.shiftKey ? 0.5 : 0.0625;
+      setDim(k, cur()[k] + (e.key === "ArrowUp" ? stepIn : -stepIn), false);
+    });
+    $("#" + k + "r").addEventListener("input", function(e){ setDim(k, parseFloat(e.target.value), false); });
+  });
+  document.querySelectorAll(".step").forEach(function(b){
+    var t1, t2;
+    function stop(){ clearTimeout(t1); clearInterval(t2); }
+    function once(){ var k = b.dataset.k; setDim(k, cur()[k] + (+b.dataset.d) * 0.0625, false); }
+    b.addEventListener("pointerdown", function(e){
+      e.preventDefault(); once();
+      t1 = setTimeout(function(){ t2 = setInterval(once, 70); }, 380);
+    });
+    ["pointerup", "pointerleave", "pointercancel"].forEach(function(ev){ b.addEventListener(ev, stop); });
+    b.addEventListener("keydown", function(e){ if(e.key === "Enter" || e.key === " "){ e.preventDefault(); once(); } });
+  });
+  $("#t-open").addEventListener("change", function(e){ state.showOpening = e.target.checked; draw(); save(); });
+  $("#t-hid").addEventListener("change", function(e){ state.showHidden = e.target.checked; draw(); save(); });
+  document.querySelectorAll('input[name="finish"]').forEach(function(el){
+    el.addEventListener("change", function(){ if(el.checked){ state.finish = el.value; renderVisuals(); save(); } });
+  });
+
+  /* ---------- job events ---------- */
+  $("#doors").addEventListener("click", function(e){
+    var pick = e.target.closest("[data-id]"), del = e.target.closest("[data-del]");
+    if(del){
+      var id = del.dataset.del, i = state.doors.findIndex(function(d){ return d.id === id; });
+      if(i < 0) return;
+      state.doors.splice(i, 1);
+      if(!state.doors.length){ var nid = uid(); state.doors.push({id:nid, name:"Door 1", qty:1, w:15, h:30}); }
+      if(state.sel === id) state.sel = state.doors[Math.min(i, state.doors.length - 1)].id;
+      syncEditor(); renderAll(); return;
+    }
+    if(pick){ state.sel = pick.dataset.id; syncEditor(); renderAll(); }
+  });
+  function addDoor(copy){
+    var d = cur(), id = uid();
+    var nd = copy ? {id:id, name:(d.name || "Door") + " copy", qty:d.qty, w:d.w, h:d.h}
+                  : {id:id, name:"Door " + (state.doors.length + 1), qty:1, w:d.w, h:d.h};
+    var i = state.doors.indexOf(d);
+    state.doors.splice(i + 1, 0, nd);
+    state.sel = id; syncEditor(); renderAll();
+    var n = $("#name"); n.focus(); n.select();
+  }
+  $("#add").addEventListener("click", function(){ addDoor(false); });
+  $("#dup").addEventListener("click", function(){ addDoor(true); });
+  var armT;
+  $("#clear").addEventListener("click", function(e){
+    var b = e.currentTarget;
+    if(!b.classList.contains("armed")){
+      b.classList.add("armed"); b.textContent = "Tap again to clear all doors";
+      armT = setTimeout(function(){ b.classList.remove("armed"); b.textContent = "New job"; }, 3500);
+      return;
+    }
+    clearTimeout(armT); b.classList.remove("armed"); b.textContent = "New job";
+    var id = uid(); state.job = ""; state.doors = [{id:id, name:"Door 1", qty:1, w:15, h:30}]; state.sel = id;
+    $("#job").value = ""; syncEditor(); renderAll();
+  });
+  $("#job").addEventListener("input", function(e){ state.job = e.target.value; save(); });
+
+  function jobText(){
+    var r = state.rules, j = jobParts(), lines = [];
+    lines.push((state.job || "Cabinet doors") + " - cut list");
+    lines.push("");
+    state.doors.forEach(function(d){
+      var c = calc(d, r);
+      lines.push((d.name || "Door") + " (x" + c.q + "): opening " + fmt(d.w) + " x " + fmt(d.h) + ", door " + fmt(c.W) + " x " + fmt(c.H) + (c.ok ? "" : "  ** too small, check size **"));
+    });
+    lines.push("");
+    lines.push("STILES (" + fmt(r.stock) + "\" wide)");
+    j.st.forEach(function(p){ lines.push("  " + p.n + " @ " + fmt(p.L) + "\""); });
+    lines.push("RAILS (" + fmt(r.stock) + "\" wide)");
+    j.ra.forEach(function(p){ lines.push("  " + p.n + " @ " + fmt(p.L) + "\""); });
+    lines.push("PANELS (width x height)");
+    j.pa.forEach(function(p){ lines.push("  " + p.n + " @ " + fmt(p.w) + " x " + fmt(p.h) + "\""); });
+    lines.push("");
+    lines.push(j.doors + " doors, " + j.lin.toFixed(1) + " lin ft of stile/rail stock, " + j.sqft.toFixed(1) + " sq ft of panel (before kerf and waste)");
+    return lines.join("\n");
+  }
+  $("#copy").addEventListener("click", function(){
+    var text = jobText(), box2 = $("#copy-box"), status = $("#copy-status");
+    function fallback(){ box2.hidden = false; box2.value = text; box2.focus(); box2.select(); status.textContent = "Press Ctrl+C or Cmd+C to copy."; }
+    try{
+      navigator.clipboard.writeText(text).then(function(){ box2.hidden = true; status.textContent = "Copied. Paste it into a text or email."; }, fallback);
+    }catch(e){ fallback(); }
+  });
+
+  /* ---------- rules events ---------- */
+  document.querySelectorAll("[data-r]").forEach(function(el){
+    el.addEventListener("input", function(){
+      var v = parseSize(el.value), ok = v >= 0 && isFinite(v);
+      el.classList.toggle("bad", !ok);
+      if(ok){ state.rules[el.dataset.r] = v; renderAll(); }
+    });
+    el.addEventListener("blur", function(){ el.value = fmt(state.rules[el.dataset.r]); el.classList.remove("bad"); });
+  });
+  $("#r-reset").addEventListener("click", function(){ state.rules = Object.assign({}, DEFAULT_RULES); syncRules(); renderAll(); });
+
+  /* ---------- boot ---------- */
+  $("#t-open").checked = state.showOpening; $("#t-hid").checked = state.showHidden;
+  var fr = document.querySelector('input[name="finish"][value="' + state.finish + '"]'); if(fr) fr.checked = true;
+  $("#job").value = state.job || "";
+  syncEditor(); syncRules();
+  setView(state.view);
+  if(G.failed) $("#gl-note").hidden = true;
+  renderAll();
+  function onResize(){ draw(); if(state.view === "3d" && G.ready){ place3D(); render3D(); } renderDiagram(); }
+  if(window.ResizeObserver){ var ro = new ResizeObserver(onResize); ro.observe(svgHost); ro.observe(glHost); ro.observe(diag); }
+  else window.addEventListener("resize", onResize);
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ draw(); renderDiagram(); });
+  window.__doorCalc = {calc:calc, parseSize:parseSize, fmt:fmt, rules:function(){ return state.rules; }, g:G};
+})();
+</script>
+</body>
+</html>
