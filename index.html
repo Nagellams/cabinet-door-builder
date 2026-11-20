@@ -297,6 +297,42 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
 @media (max-width:420px){.rules{grid-template-columns:minmax(0,1fr)}.totals{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
+/* saved jobs (sign-in) */
+.acct{flex-basis:100%;display:flex;justify-content:flex-end;gap:8px;margin-bottom:-8px}
+.hbtn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--hero-line);background:rgba(255,255,255,.08);color:var(--hero-ink);border-radius:999px;padding:6px 14px;font-weight:600;font-size:14px;cursor:pointer;transition:background .15s}
+.hbtn:hover{background:rgba(255,255,255,.16)}
+.hbtn svg{width:16px;height:16px;flex:0 0 auto}
+.cloud{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;margin-top:10px;font-size:13px;color:var(--muted)}
+.cloud-dot{width:8px;height:8px;border-radius:50%;background:var(--line);flex:0 0 auto}
+.cloud[data-s="saved"] .cloud-dot{background:var(--rail)}
+.cloud[data-s="saving"] .cloud-dot{background:var(--gold-line)}
+.cloud[data-s="error"] .cloud-dot,.cloud[data-s="denied"] .cloud-dot{background:var(--danger)}
+.cloud[data-s="error"],.cloud[data-s="denied"]{color:var(--danger)}
+.linkbtn{border:0;background:none;padding:0;color:var(--stile);font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:2px;font-size:inherit}
+.jobs-dlg{width:min(560px,calc(100vw - 24px));max-height:min(720px,calc(100dvh - 24px));padding:0;border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);box-shadow:0 24px 60px rgba(10,20,35,.35)}
+.jobs-dlg[open]{display:flex;flex-direction:column}
+.jobs-dlg::backdrop{background:rgba(15,22,32,.55)}
+.dlg-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}
+.dlg-head h2{font-size:22px;font-weight:700}
+.dlg-x{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:22px;line-height:1;cursor:pointer;color:var(--muted)}
+.dlg-body{padding:16px 18px;overflow:auto;flex:1 1 auto}
+.dlg-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+.dlg-tools .in{flex:1 1 180px;width:auto;background:var(--sunk)}
+.dlg-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 18px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.dlg-signin p{margin:0 0 14px;font-size:15px}
+.jobs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.jrow{display:flex;align-items:stretch;border:1px solid var(--line);border-radius:11px;overflow:hidden;background:var(--surface)}
+.jrow.on{border-color:var(--slate);box-shadow:inset 3px 0 0 var(--slate)}
+.jpick{flex:1;min-width:0;text-align:left;border:0;background:none;padding:11px 13px;cursor:pointer;display:flex;flex-direction:column;gap:2px;color:var(--ink)}
+.jpick:hover{background:var(--sunk)}
+.jpick.armed{background:var(--danger-tint)}
+.jn{font-family:var(--font-display);font-size:18px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jm{font-size:13px;color:var(--muted)}
+.jpick.armed .jm{color:var(--danger)}
+.jdel{border:0;border-left:1px solid var(--line);background:none;padding:0 14px;color:var(--muted);font-weight:600;cursor:pointer;font-size:13px}
+.jdel:hover{color:var(--danger)}
+.jdel.armed{background:var(--danger-tint);color:var(--danger)}
+
 /* print button */
 .btn.has-ico{display:inline-flex;align-items:center;gap:8px}
 .btn .bi{width:17px;height:17px;flex:0 0 auto}
@@ -352,6 +388,10 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
 
 <header class="hero">
   <div class="hero-inner gutter">
+    <div class="acct" id="acct" hidden>
+      <button class="hbtn" type="button" id="jobs-btn" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 4.5a1 1 0 0 1 1-1h3.6l1.4 1.5h6a1 1 0 0 1 1 1v6.5a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>Saved jobs</button>
+      <button class="hbtn" type="button" id="signin-btn" hidden>Sign in</button>
+    </div>
     <div class="brand">
       <svg class="mark" viewBox="0 0 40 50" aria-hidden="true">
         <rect class="m-pa" x="8" y="8" width="24" height="34"/>
@@ -483,11 +523,13 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
     <section class="card a-job" aria-labelledby="job-h">
       <div class="card-head"><h2 id="job-h">Job</h2><span class="eyebrow" id="job-count"></span></div>
       <div class="field job-name"><label for="job">Job / customer</label><input id="job" class="in" autocomplete="off" placeholder="Smith kitchen"></div>
+      <div class="cloud" id="cloud" hidden aria-live="polite"><span class="cloud-dot" aria-hidden="true"></span><span id="cloud-msg"></span><button class="linkbtn" type="button" id="cloud-act" hidden></button></div>
       <ul class="doors" id="doors"></ul>
       <div class="btns">
         <button class="btn primary" type="button" id="add">Add door</button>
         <button class="btn" type="button" id="dup">Duplicate door</button>
         <button class="btn" type="button" id="clear">New job</button>
+        <button class="btn" type="button" id="open-jobs" hidden>Saved jobs</button>
       </div>
       <div class="groups" id="groups"></div>
       <div class="btns">
@@ -515,6 +557,26 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
 </div>
 
 <div class="ps" id="print-sheet"></div>
+
+<dialog class="jobs-dlg" id="jobs-dlg" aria-labelledby="jobs-h">
+  <div class="dlg-head"><h2 id="jobs-h">Saved jobs</h2><button class="dlg-x" type="button" id="jobs-close" aria-label="Close">×</button></div>
+  <div class="dlg-body">
+    <div class="dlg-signin" id="jobs-signin" hidden>
+      <p>Sign in to keep every job you build and open it again later from any phone or computer.</p>
+      <button class="btn primary" type="button" id="jobs-signin-btn">Sign in with Google</button>
+      <p class="hint" id="jobs-signin-err" aria-live="polite"></p>
+    </div>
+    <div id="jobs-main" hidden>
+      <div class="dlg-tools">
+        <button class="btn primary" type="button" id="jobs-new">Start a new job</button>
+        <input class="in" id="jobs-find" type="search" placeholder="Find a job" aria-label="Find a job" autocomplete="off">
+      </div>
+      <ul class="jobs" id="jobs-list"></ul>
+      <p class="hint" id="jobs-note" aria-live="polite"></p>
+    </div>
+  </div>
+  <div class="dlg-foot" id="jobs-foot" hidden><span id="jobs-who"></span><button class="linkbtn" type="button" id="signout-btn">Sign out</button></div>
+</dialog>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
@@ -557,7 +619,9 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
   }
   var state = load() || fresh();
   var saveT;
-  function save(){ clearTimeout(saveT); saveT = setTimeout(function(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }, 150); }
+  var quiet = true;  // true while the app itself fills the screen (boot, opening a job), so that isn't saved as an edit
+  function writeLocal(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+  function save(){ clearTimeout(saveT); saveT = setTimeout(writeLocal, 150); if(!quiet) cloudQueue(); }
 
   /* ---------- math ---------- */
   var r16 = function(x){ return Math.round(x * 16) / 16; };
@@ -1296,18 +1360,6 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
   }
   $("#add").addEventListener("click", function(){ addDoor(false); });
   $("#dup").addEventListener("click", function(){ addDoor(true); });
-  var armT;
-  $("#clear").addEventListener("click", function(e){
-    var b = e.currentTarget;
-    if(!b.classList.contains("armed")){
-      b.classList.add("armed"); b.textContent = "Tap again to clear all doors";
-      armT = setTimeout(function(){ b.classList.remove("armed"); b.textContent = "New job"; }, 3500);
-      return;
-    }
-    clearTimeout(armT); b.classList.remove("armed"); b.textContent = "New job";
-    var id = uid(); state.job = ""; state.doors = [{id:id, name:"Door 1", qty:1, w:15, h:30}]; state.sel = id;
-    $("#job").value = ""; syncEditor(); renderAll();
-  });
   $("#job").addEventListener("input", function(e){ state.job = e.target.value; save(); });
 
   function jobText(){
@@ -1337,6 +1389,228 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
     }catch(e){ fallback(); }
   });
 
+  /* ---------- saved jobs (sign-in) ----------
+     When signed in, the job on screen saves to the account a moment after each change, once it has a
+     name or its own doors. "New job" then starts a fresh job and the old one stays in Saved jobs. */
+  var cloud = null, cloudUser = null, denied = false, cloudT = 0, retryT = 0, cloudPend = null, cloudErr = "", cloudSavedAt = 0, cloudNote = "", signErr = "";
+  var jobsCache = null, jobsLoading = false, jobsMsg = "";
+  var dlg = $("#jobs-dlg");
+  var EXAMPLES = [JSON.stringify([["Example: Sink base", 2, 15.5, 30.25, false]]), JSON.stringify([["Door 1", 1, 15, 30, false]])];
+  function doorsKey(){ return JSON.stringify(state.doors.map(function(d){ return [d.name || "", Math.max(1, d.qty | 0), d.w, d.h, !!d.pair]; })); }
+  function jobSig(){ return JSON.stringify([(state.job || "").trim(), doorsKey(), state.rules]); }
+  function isBlank(){ return !(state.job || "").trim() && EXAMPLES.indexOf(doorsKey()) >= 0; }
+  function isSaved(){ return state.cloudSig === jobSig() || (!state.jobId && isBlank()); }
+  function newJobId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+  function clock(t){ return new Date(t).toLocaleTimeString(undefined, {hour:"numeric", minute:"2-digit"}); }
+  function when(t){ return t ? new Date(t).toLocaleString(undefined, {month:"short", day:"numeric", year:"numeric", hour:"numeric", minute:"2-digit"}) : ""; }
+
+  function cloudMode(){
+    if(!cloudUser) return "out";
+    if(denied) return "denied";
+    if(cloudErr && !isSaved()) return "error";
+    if(cloudT || cloudPend) return "saving";
+    if(!state.jobId && isBlank()) return "blank";
+    return isSaved() ? "saved" : "saving";
+  }
+  function setCloud(){
+    var on = !!cloud;
+    $("#acct").hidden = !on; $("#cloud").hidden = !on;
+    $("#jobs-btn").hidden = !on || !cloudUser; $("#signin-btn").hidden = !on || !!cloudUser; $("#open-jobs").hidden = !on || !cloudUser;
+    if(!on) return;
+    var m = cloudMode(), msg, act = "";
+    if(m === "out"){ msg = signErr || "Sign in to save this job and open it again later."; act = "Sign in"; }
+    else if(m === "denied"){ msg = "This Google account can't save jobs here."; act = "Sign out"; }
+    else if(m === "error"){ msg = "Not saved yet. Check the connection. It will keep trying."; act = "Try again"; }
+    else if(m === "saving") msg = "Saving…";
+    else if(m === "blank") msg = cloudNote || "Jobs save to your account as you work.";
+    else msg = "Saved to your account" + (cloudSavedAt ? " at " + clock(cloudSavedAt) : "") + ".";
+    $("#cloud").dataset.s = m; $("#cloud-msg").textContent = msg;
+    var a = $("#cloud-act"); a.hidden = !act; a.textContent = act; a.dataset.m = m;
+  }
+  function cloudQueue(){
+    cloudNote = "";
+    if(!cloudUser || denied || isSaved()){ setCloud(); return; }
+    clearTimeout(cloudT); cloudT = setTimeout(cloudFlush, 1200);
+    setCloud();
+  }
+  // Save now. Resolves true when the job on screen is safely in the account.
+  function cloudFlush(){
+    clearTimeout(cloudT); cloudT = 0;
+    if(cloudPend) return cloudPend.then(cloudFlush);
+    if(!cloudUser || denied){ setCloud(); return Promise.resolve(false); }
+    if(isSaved()){ setCloud(); return Promise.resolve(true); }
+    if(!state.jobId){ state.jobId = newJobId(); state.jobCreated = Date.now(); }
+    var id = state.jobId, sig = jobSig(), now = Date.now(), n = 0;
+    state.doors.forEach(function(d){ n += calc(d, state.rules).n; });
+    var data = {name:(state.job || "").trim(), rules:Object.assign({}, state.rules), doorCount:n, created:state.jobCreated || now, updated:now,
+      doors:state.doors.map(function(d){ return {id:d.id, name:d.name || "", qty:Math.max(1, d.qty | 0), w:d.w, h:d.h, pair:!!d.pair}; })};
+    cloudPend = cloud.save(id, data).then(function(){
+      cloudPend = null; cloudErr = "";
+      keepInList(id, data);
+      if(state.jobId !== id) return true;
+      state.cloudSig = sig; cloudSavedAt = now; writeLocal();
+      if(!isSaved()) return cloudFlush();
+      setCloud(); return true;
+    }, function(e){
+      cloudPend = null;
+      if(e && e.code === "permission-denied") denied = true;
+      else{ cloudErr = "offline"; clearTimeout(retryT); retryT = setTimeout(function(){ if(cloudErr) cloudFlush(); }, 15000); }
+      setCloud(); return false;
+    });
+    setCloud();
+    return cloudPend;
+  }
+  function keepInList(id, data){
+    if(!jobsCache) return;
+    jobsCache = jobsCache.filter(function(j){ return j.id !== id; });
+    jobsCache.unshift(Object.assign({}, data, {id:id}));
+    jobsCache.sort(function(a, b){ return (b.updated || 0) - (a.updated || 0); });
+    renderJobsDlg();
+  }
+  function loadJobs(){
+    if(!cloudUser || denied) return Promise.resolve();
+    jobsLoading = true; jobsMsg = ""; renderJobsDlg();
+    return cloud.list().then(function(list){ jobsCache = list; }, function(e){
+      if(e && e.code === "permission-denied") denied = true;
+      else jobsMsg = "Couldn't load saved jobs. Check the connection, then open this again.";
+    }).then(function(){ jobsLoading = false; setCloud(); renderJobsDlg(); });
+  }
+  function signIn(){
+    if(!cloud) return;
+    signErr = ""; $("#jobs-signin-err").textContent = ""; setCloud();
+    cloud.signIn().catch(function(e){
+      var c = (e && e.code) || "";
+      if(c === "auth/popup-closed-by-user" || c === "auth/cancelled-popup-request") return;
+      signErr = c === "auth/popup-blocked" ? "Your browser blocked the sign-in window. Allow pop-ups for this site, then try again."
+        : c === "auth/network-request-failed" ? "Couldn't reach Google. Check the connection and try again."
+        : "Sign-in didn't work. Please try again.";
+      $("#jobs-signin-err").textContent = signErr; setCloud();
+    });
+  }
+  function onUser(){
+    cloudUser = cloud.user || null; denied = false; cloudErr = ""; jobsCache = null; jobsMsg = ""; signErr = "";
+    clearTimeout(cloudT); cloudT = 0;
+    if(cloudUser) loadJobs().then(function(){ if(!denied) cloudQueue(); });  // the first read also checks this account may use saved jobs
+    setCloud(); renderJobsDlg();
+  }
+  function attachCloud(){
+    if(cloud || !window.DoorCloud) return;
+    cloud = window.DoorCloud;
+    if(cloud.user) onUser(); else setCloud();
+  }
+
+  function startNewJob(){
+    var id = uid(); quiet = true;
+    state.job = ""; state.jobId = null; state.jobCreated = 0;
+    state.doors = [{id:id, name:"Door 1", qty:1, w:15, h:30}]; state.sel = id;
+    $("#job").value = ""; syncEditor(); renderAll();
+    state.cloudSig = jobSig(); cloudErr = ""; cloudSavedAt = 0; quiet = false; writeLocal(); setCloud();
+  }
+  function openJob(j){
+    quiet = true;
+    state.jobId = j.id; state.job = j.name || ""; state.jobCreated = j.created || 0;
+    state.doors = (j.doors || []).map(function(d){ return {id:d.id || uid(), name:d.name || "", qty:Math.max(1, d.qty | 0), w:+d.w || 15, h:+d.h || 30, pair:!!d.pair}; });
+    if(!state.doors.length) state.doors = [{id:uid(), name:"Door 1", qty:1, w:15, h:30}];
+    if(j.rules) state.rules = Object.assign({}, DEFAULT_RULES, j.rules);
+    state.sel = state.doors[0].id;
+    $("#job").value = state.job; syncEditor(); syncRules(); renderAll();
+    state.cloudSig = jobSig(); cloudErr = ""; cloudNote = ""; cloudSavedAt = j.updated || 0; quiet = false; writeLocal(); setCloud();
+  }
+  var armT;
+  function arm(b, text){
+    if(!b.dataset.label) b.dataset.label = b.textContent;
+    b.classList.add("armed"); b.textContent = text;
+    clearTimeout(armT); armT = setTimeout(function(){ disarm(b); }, 3500);
+  }
+  function disarm(b){ clearTimeout(armT); b.classList.remove("armed"); if(b.dataset.label) b.textContent = b.dataset.label; }
+  function newJobFlow(b, done){
+    if(b.classList.contains("armed")){ disarm(b); startNewJob(); if(done) done(); return; }
+    if(cloudUser && !denied){
+      cloudFlush().then(function(){
+        if(!isSaved()){ arm(b, "Not saved yet. Tap again to start over"); return; }
+        var was = (state.job || "").trim();
+        startNewJob();
+        if(was){ cloudNote = "“" + was + "” is saved. Open it again from Saved jobs."; setCloud(); }
+        if(done) done();
+      });
+      return;
+    }
+    arm(b, "Tap again to clear all doors");
+  }
+  $("#clear").addEventListener("click", function(e){ newJobFlow(e.currentTarget); });
+  $("#jobs-new").addEventListener("click", function(e){ newJobFlow(e.currentTarget, function(){ dlg.close(); }); });
+
+  function renderJobsDlg(){
+    if(!dlg.open) return;
+    var inn = !!cloudUser && !denied;
+    $("#jobs-signin").hidden = inn; $("#jobs-main").hidden = !inn; $("#jobs-foot").hidden = !cloudUser;
+    $("#jobs-signin-btn").hidden = !!cloudUser;
+    $("#jobs-signin p").textContent = denied ? "This Google account can't use saved jobs here. Sign out, then sign in with the account the jobs belong to."
+      : "Sign in to keep every job you build and open it again later from any phone or computer.";
+    $("#jobs-who").textContent = cloudUser ? "Signed in as " + (cloudUser.email || cloudUser.name) : "";
+    if(!inn) return;
+    var all = jobsCache || [], f = $("#jobs-find").value.trim().toLowerCase();
+    var list = all.filter(function(j){ return !f || (j.name || "Untitled job").toLowerCase().indexOf(f) >= 0; });
+    $("#jobs-find").hidden = all.length < 6 && !f;
+    $("#jobs-list").innerHTML = list.map(function(j){
+      var on = j.id === state.jobId, nm = j.name || "Untitled job";
+      return '<li class="jrow' + (on ? " on" : "") + '"><button type="button" class="jpick" data-open="' + esc(j.id) + '"><span class="jn">' + esc(nm) + '</span><span class="jm">' +
+        (on ? "On screen now · " : "") + doorsWord(j.doorCount || 0) + (j.updated ? " · " + esc(when(j.updated)) : "") + '</span></button>' +
+        '<button type="button" class="jdel" data-deljob="' + esc(j.id) + '" aria-label="Delete ' + esc(nm) + '">Delete</button></li>';
+    }).join("");
+    $("#jobs-note").textContent = jobsMsg || (jobsLoading && !jobsCache ? "Loading your jobs…"
+      : !all.length ? "No saved jobs yet. Type a job name and the job saves here as you work."
+      : !list.length ? "No jobs match “" + f + "”." : "");
+  }
+  function openJobsDlg(){
+    if(!cloud) return;
+    if(!dlg.open){ if(dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", ""); }
+    $("#jobs-find").value = ""; jobsMsg = ""; renderJobsDlg();
+    if(cloudUser && !denied) cloudFlush().then(loadJobs);
+  }
+  $("#jobs-btn").addEventListener("click", openJobsDlg);
+  $("#open-jobs").addEventListener("click", openJobsDlg);
+  $("#signin-btn").addEventListener("click", signIn);
+  $("#jobs-signin-btn").addEventListener("click", signIn);
+  $("#jobs-close").addEventListener("click", function(){ dlg.close(); });
+  dlg.addEventListener("click", function(e){ if(e.target === dlg) dlg.close(); });
+  $("#jobs-find").addEventListener("input", renderJobsDlg);
+  $("#signout-btn").addEventListener("click", function(){ cloudFlush().then(function(){ return cloud.signOut(); }).then(function(){ dlg.close(); }); });
+  $("#cloud-act").addEventListener("click", function(e){
+    var m = e.currentTarget.dataset.m;
+    if(m === "out") signIn(); else if(m === "denied") cloud.signOut(); else if(m === "error") cloudFlush();
+  });
+  $("#jobs-list").addEventListener("click", function(e){
+    var op = e.target.closest("[data-open]"), del = e.target.closest("[data-deljob]");
+    var find = function(id){ return (jobsCache || []).filter(function(j){ return j.id === id; })[0]; };
+    if(op){
+      var j = find(op.dataset.open); if(!j) return;
+      if(j.id === state.jobId){ dlg.close(); return; }
+      if(op.classList.contains("armed")){ openJob(j); dlg.close(); return; }
+      cloudFlush().then(function(){
+        if(isSaved()){ openJob(j); dlg.close(); return; }
+        op.classList.add("armed"); op.querySelector(".jm").textContent = "The job on screen isn't saved yet. Tap again to open this one anyway.";
+        setTimeout(renderJobsDlg, 4000);
+      });
+    }else if(del){
+      if(!del.classList.contains("armed")){
+        del.classList.add("armed"); del.textContent = "Tap again";
+        setTimeout(function(){ if(del.isConnected && !del.disabled){ del.classList.remove("armed"); del.textContent = "Delete"; } }, 3500);
+        return;
+      }
+      var id = del.dataset.deljob; del.disabled = true; del.textContent = "Deleting…";
+      cloud.remove(id).then(function(){
+        jobsCache = (jobsCache || []).filter(function(x){ return x.id !== id; });
+        if(state.jobId === id) startNewJob();
+        renderJobsDlg();
+      }, function(){ jobsMsg = "Couldn't delete that job. Check the connection and try again."; renderJobsDlg(); });
+    }
+  });
+  window.addEventListener("doorcloud-ready", attachCloud);
+  window.addEventListener("doorcloud-user", function(){ attachCloud(); if(cloud) onUser(); });
+  window.addEventListener("online", function(){ if(cloudErr) cloudFlush(); });
+  document.addEventListener("visibilitychange", function(){ if(document.visibilityState === "hidden" && cloudT) cloudFlush(); });
+
   /* ---------- rules events ---------- */
   document.querySelectorAll("[data-r]").forEach(function(el){
     el.addEventListener("input", function(){
@@ -1356,11 +1630,48 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
   setView(state.view);
   if(G.failed) $("#gl-note").hidden = true;
   renderAll();
+  quiet = false;
+  attachCloud();
   function onResize(){ draw(); if(state.view === "3d" && G.ready){ place3D(); render3D(); } renderDiagram(); }
   if(window.ResizeObserver){ var ro = new ResizeObserver(onResize); ro.observe(svgHost); ro.observe(glHost); ro.observe(diag); }
   else window.addEventListener("resize", onResize);
   if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ draw(); renderDiagram(); });
   window.__doorCalc = {calc:calc, parseSize:parseSize, fmt:fmt, rules:function(){ return state.rules; }, g:G};
+})();
+</script>
+<script type="module">
+/* Saved jobs: Google sign-in and a Firestore database in the shop's own free Firebase project.
+   These settings only name the project (Firebase project cabinet-door-builder-13d84, owned by the shop's
+   Google account); who may read or save jobs is decided by the database rules in the Firebase console.
+   Set FIREBASE to null and the page works as before, with no sign-in. */
+const FIREBASE = {
+  apiKey: "AIzaSyCoyLuJEsUWe2ZQz1dJsYGcYvDNHLMzrRQ",
+  authDomain: "cabinet-door-builder-13d84.firebaseapp.com",
+  projectId: "cabinet-door-builder-13d84",
+  appId: "1:900512636333:web:6c76ee6943ec5e00491524"
+};
+const SDK = "https://www.gstatic.com/firebasejs/12.19.0/";
+(async function(){
+  if(window.DoorCloud || !FIREBASE) return;
+  try{
+    const [fbApp, A, F] = await Promise.all([import(SDK + "firebase-app.js"), import(SDK + "firebase-auth.js"), import(SDK + "firebase-firestore-lite.js")]);
+    const app = fbApp.initializeApp(FIREBASE), auth = A.getAuth(app), db = F.getFirestore(app);
+    const jobs = () => F.collection(db, "users", api.user.uid, "jobs");
+    const api = {
+      user: null,
+      signIn(){ const p = new A.GoogleAuthProvider(); p.setCustomParameters({prompt: "select_account"}); return A.signInWithPopup(auth, p); },
+      signOut(){ return A.signOut(auth); },
+      async list(){ const snap = await F.getDocs(F.query(jobs(), F.orderBy("updated", "desc"))); return snap.docs.map(d => Object.assign({}, d.data(), {id: d.id})); },
+      save(id, data){ return F.setDoc(F.doc(jobs(), id), data); },
+      remove(id){ return F.deleteDoc(F.doc(jobs(), id)); }
+    };
+    A.onAuthStateChanged(auth, u => {
+      api.user = u ? {uid: u.uid, email: u.email || "", name: u.displayName || ""} : null;
+      window.dispatchEvent(new Event("doorcloud-user"));
+    });
+    window.DoorCloud = api;
+    window.dispatchEvent(new Event("doorcloud-ready"));
+  }catch(e){ console.warn("Saved jobs are not available right now.", e); }
 })();
 </script>
 </body>
