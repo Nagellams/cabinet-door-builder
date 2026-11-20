@@ -96,10 +96,10 @@ button,input{font:inherit;color:inherit}
 
 /* layout */
 .wrap{max-width:1280px;margin:0 auto;padding-block:20px 56px}
-.layout{display:grid;gap:16px;grid-template-columns:minmax(0,1fr);grid-template-areas:"editor" "stage" "cut" "job" "rules"}
-.a-editor{grid-area:editor}.a-stage{grid-area:stage}.a-cut{grid-area:cut}.a-job{grid-area:job}.a-rules{grid-area:rules}
+.layout{display:grid;gap:16px;grid-template-columns:minmax(0,1fr);grid-template-areas:"job" "editor" "stage" "cut" "list" "rules"}
+.a-editor{grid-area:editor}.a-stage{grid-area:stage}.a-cut{grid-area:cut}.a-job{grid-area:job}.a-list{grid-area:list}.a-rules{grid-area:rules}
 @media (min-width:960px){
-  .layout{grid-template-columns:minmax(0,440px) minmax(0,1fr);grid-template-areas:"editor stage" "cut stage" "job stage" "rules stage";grid-template-rows:auto auto auto 1fr}
+  .layout{grid-template-columns:minmax(0,440px) minmax(0,1fr);grid-template-areas:"job stage" "editor stage" "cut stage" "list stage" "rules stage";grid-template-rows:auto auto auto auto 1fr}
   .a-stage{align-self:start;position:sticky;top:16px}
 }
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;min-width:0;box-shadow:var(--shadow)}
@@ -251,6 +251,16 @@ input[type=range]{width:100%;accent-color:var(--gold-line);margin:8px 0 0}
 
 /* job */
 .job-name{margin-bottom:14px}
+.a-job .job-name{margin-bottom:0}
+.a-job .job-name .in{font-family:var(--font-display);font-size:20px;font-weight:600}
+.a-job .btns{margin-top:12px}
+.recent{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.recent ul{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.rpick{width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 12px;cursor:pointer;display:flex;flex-direction:column;gap:1px;color:var(--ink)}
+.rpick:hover{border-color:var(--slate);background:var(--sunk)}
+.rpick.armed{background:var(--danger-tint);border-color:var(--danger)}
+.rpick .jn{font-size:16px}
+.rpick.armed .jm{color:var(--danger)}
 .doors{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
 .door{display:flex;align-items:stretch;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);transition:border-color .12s,background .12s}
 .door:hover{border-color:var(--slate)}
@@ -411,6 +421,20 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
 
 <div class="wrap gutter">
   <main class="layout">
+    <section class="card a-job" aria-labelledby="job-h">
+      <div class="card-head"><h2 id="job-h">Job</h2><span class="eyebrow" id="job-count"></span></div>
+      <div class="field job-name"><label for="job">Job / customer</label><input id="job" class="in" autocomplete="off" placeholder="Smith kitchen"></div>
+      <div class="cloud" id="cloud" hidden aria-live="polite"><span class="cloud-dot" aria-hidden="true"></span><span id="cloud-msg"></span><button class="linkbtn" type="button" id="cloud-act" hidden></button></div>
+      <div class="btns">
+        <button class="btn" type="button" id="open-jobs" hidden>Open a saved job</button>
+        <button class="btn" type="button" id="clear">Start a new job</button>
+      </div>
+      <div class="recent" id="recent" hidden>
+        <span class="eyebrow">Recent jobs</span>
+        <ul id="recent-list"></ul>
+      </div>
+    </section>
+
     <section class="card a-editor" aria-labelledby="ed-h">
       <div class="card-head"><h2 id="ed-h">Door</h2><span class="eyebrow">Opening size, inches</span></div>
       <div class="row2">
@@ -520,16 +544,12 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
       </div>
     </section>
 
-    <section class="card a-job" aria-labelledby="job-h">
-      <div class="card-head"><h2 id="job-h">Job</h2><span class="eyebrow" id="job-count"></span></div>
-      <div class="field job-name"><label for="job">Job / customer</label><input id="job" class="in" autocomplete="off" placeholder="Smith kitchen"></div>
-      <div class="cloud" id="cloud" hidden aria-live="polite"><span class="cloud-dot" aria-hidden="true"></span><span id="cloud-msg"></span><button class="linkbtn" type="button" id="cloud-act" hidden></button></div>
+    <section class="card a-list" aria-labelledby="list-h">
+      <div class="card-head"><h2 id="list-h">Job cut list</h2><span class="eyebrow" id="list-count"></span></div>
       <ul class="doors" id="doors"></ul>
       <div class="btns">
         <button class="btn primary" type="button" id="add">Add door</button>
         <button class="btn" type="button" id="dup">Duplicate door</button>
-        <button class="btn" type="button" id="clear">New job</button>
-        <button class="btn" type="button" id="open-jobs" hidden>Saved jobs</button>
       </div>
       <div class="groups" id="groups"></div>
       <div class="btns">
@@ -1170,7 +1190,7 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
         '<button type="button" class="door-del" data-del="' + d.id + '" aria-label="Remove ' + esc(d.name || "door") + '">×</button></li>';
     }).join("");
     $("#doors").innerHTML = html;
-    $("#job-count").textContent = doorsWord(total);
+    $("#job-count").textContent = $("#list-count").textContent = doorsWord(total);
   }
   function jobParts(){
     var r = state.rules, st = {}, ra = {}, pa = {}, doors = 0, lin2 = 0, area = 0, bad = 0, badNames = [];
@@ -1415,7 +1435,8 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
   function setCloud(){
     var on = !!cloud;
     $("#acct").hidden = !on; $("#cloud").hidden = !on;
-    $("#jobs-btn").hidden = !on || !cloudUser; $("#signin-btn").hidden = !on || !!cloudUser; $("#open-jobs").hidden = !on || !cloudUser;
+    $("#jobs-btn").hidden = !on || !cloudUser; $("#signin-btn").hidden = !on || !!cloudUser; $("#open-jobs").hidden = !on;
+    renderRecent();
     if(!on) return;
     var m = cloudMode(), msg, act = "";
     if(m === "out"){ msg = signErr || "Sign in to save this job and open it again later."; act = "Sign in"; }
@@ -1465,7 +1486,7 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
     jobsCache = jobsCache.filter(function(j){ return j.id !== id; });
     jobsCache.unshift(Object.assign({}, data, {id:id}));
     jobsCache.sort(function(a, b){ return (b.updated || 0) - (a.updated || 0); });
-    renderJobsDlg();
+    renderJobsDlg(); renderRecent();
   }
   function loadJobs(){
     if(!cloudUser || denied) return Promise.resolve();
@@ -1530,7 +1551,7 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
         if(!isSaved()){ arm(b, "Not saved yet. Tap again to start over"); return; }
         var was = (state.job || "").trim();
         startNewJob();
-        if(was){ cloudNote = "“" + was + "” is saved. Open it again from Saved jobs."; setCloud(); }
+        if(was){ cloudNote = "“" + was + "” is saved. It's under Recent jobs below."; setCloud(); }
         if(done) done();
       });
       return;
@@ -1539,6 +1560,34 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
   }
   $("#clear").addEventListener("click", function(e){ newJobFlow(e.currentTarget); });
   $("#jobs-new").addEventListener("click", function(e){ newJobFlow(e.currentTarget, function(){ dlg.close(); }); });
+
+  // Up to 3 latest saved jobs (not the one on screen), right in the Job panel
+  var recentHtml = null;
+  function renderRecent(){
+    var list = cloud && cloudUser && !denied && jobsCache ? jobsCache.filter(function(j){ return j.id !== state.jobId; }).slice(0, 3) : [];
+    var html = list.map(function(j){
+      return '<li><button type="button" class="rpick" data-open="' + esc(j.id) + '"><span class="jn">' + esc(j.name || "Untitled job") + '</span><span class="jm">' +
+        doorsWord(j.doorCount || 0) + (j.updated ? " · " + esc(when(j.updated)) : "") + "</span></button></li>";
+    }).join("");
+    $("#recent").hidden = !html;
+    if(html !== recentHtml){ recentHtml = html; $("#recent-list").innerHTML = html; }
+  }
+  // Open a saved job. If the job on screen couldn't be saved, the first tap warns and a second tap opens anyway.
+  function tryOpen(btn, done){
+    var j = (jobsCache || []).filter(function(x){ return x.id === btn.dataset.open; })[0];
+    if(!j) return;
+    if(j.id === state.jobId){ if(done) done(); return; }
+    if(btn.classList.contains("armed")){ openJob(j); if(done) done(); return; }
+    cloudFlush().then(function(){
+      if(isSaved()){ openJob(j); if(done) done(); return; }
+      btn.classList.add("armed"); btn.querySelector(".jm").textContent = "The job on screen isn't saved yet. Tap again to open this one anyway.";
+      setTimeout(function(){ recentHtml = null; renderRecent(); renderJobsDlg(); }, 4000);
+    });
+  }
+  $("#recent-list").addEventListener("click", function(e){
+    var b = e.target.closest("[data-open]");
+    if(b) tryOpen(b, function(){ window.scrollTo({top:0, behavior:"smooth"}); });
+  });
 
   function renderJobsDlg(){
     if(!dlg.open) return;
@@ -1582,16 +1631,8 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
   });
   $("#jobs-list").addEventListener("click", function(e){
     var op = e.target.closest("[data-open]"), del = e.target.closest("[data-deljob]");
-    var find = function(id){ return (jobsCache || []).filter(function(j){ return j.id === id; })[0]; };
     if(op){
-      var j = find(op.dataset.open); if(!j) return;
-      if(j.id === state.jobId){ dlg.close(); return; }
-      if(op.classList.contains("armed")){ openJob(j); dlg.close(); return; }
-      cloudFlush().then(function(){
-        if(isSaved()){ openJob(j); dlg.close(); return; }
-        op.classList.add("armed"); op.querySelector(".jm").textContent = "The job on screen isn't saved yet. Tap again to open this one anyway.";
-        setTimeout(renderJobsDlg, 4000);
-      });
+      tryOpen(op, function(){ dlg.close(); });
     }else if(del){
       if(!del.classList.contains("armed")){
         del.classList.add("armed"); del.textContent = "Tap again";
@@ -1602,7 +1643,7 @@ details[open].card>summary .eyebrow::after{content:" ▾"}
       cloud.remove(id).then(function(){
         jobsCache = (jobsCache || []).filter(function(x){ return x.id !== id; });
         if(state.jobId === id) startNewJob();
-        renderJobsDlg();
+        renderJobsDlg(); renderRecent();
       }, function(){ jobsMsg = "Couldn't delete that job. Check the connection and try again."; renderJobsDlg(); });
     }
   });
